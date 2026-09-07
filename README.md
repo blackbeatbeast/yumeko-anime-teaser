@@ -29,5 +29,13 @@ npm run build と npx tsc --noEmit、npx oxlint appを実施。HTTP応答を確�
 
 ## 公開
 
+公開サイト：https://blackbeatbeast.github.io/yumeko-anime-teaser/
+
+GitHub Pages用は `npm run build:pages`。`dist/pages` に静的HTML・JS・画像を生成する。
+`main` への更新は `.github/workflows/pages.yml` で自動公開する。
+既存のSites版は引き続き `npm run build` で構築できる。
+静的出力にはサーバーへのリクエストが必要な機能を含めず、画面内リンクとReactの状態で操作する。
+Pages版の生成時にはHTMLと参照素材の存在、リポジトリ配下のURLを自動検証する。
+
 Sites用の設定は.openai/hosting.json。秘密情報や環境変数、依存関係、生成ビルドはGitへ含めない。
 
