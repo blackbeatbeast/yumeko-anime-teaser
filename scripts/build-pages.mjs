@@ -18,7 +18,7 @@ for (const name of readdirSync('dist/client')) {
 cpSync(`dist/client${prefix}/_next`, `${target}/_next`, { recursive: true });
 writeFileSync(`${target}/.nojekyll`, '');
 const html = readFileSync(`${target}/index.html`, 'utf8');
-if (!html.includes('ゆめこ、今日も自爆中。')) throw new Error('Missing rendered home page');
+if (!html.includes('ゆめこ、今日も創作中。')) throw new Error('Missing rendered home page');
 for (const [, url] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
   if (!url.startsWith('/')) continue;
   if (!url.startsWith(`${prefix}/`)) throw new Error(`Incorrect Pages URL: ${url}`);

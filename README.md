@@ -1,41 +1,56 @@
-# ゆめこ、今日も自爆中。
+# ゆめこ、今日も創作中。
 
-ピンク髪のXアイコンを主人公にしたアニメ風ティザーサイト。計画書Ver.2（2026-09-08）に基づく初版。
+既存のアニメ風ティザーを、AI/Codexとつくった4作品の紹介へ更新したローカル草案です。
 
-## 内容
+- BookVoice：本の段落再生、地の文・台詞の声分け。開発ベータ。
+- AINE：AIとのメッセージ・音声会話、会話の整理と分岐。
+- 育児ログ：スマホで記録し、時刻順の紙ビューから書き写すPWA。
+- IrodoriMicBridge：マイクの文字起こしからIrodoriTTSと仮想音声出力へつなぐツール。
 
-- 主役の描き起こしと表情切替（対戦／日常／好奇心）
-- 展開して読める創作エピソード3本
-- 現在：鉄拳8、ファーカムラム／クニミツ（2026-09-08ユーザー確認）
-- 過去：鉄拳7・NARAKAの配信リンク
-- ＼ぬ／ボタン、モーション低減への対応
+元のキャラクター素材、ヒーローの構図、紙色・ピンク・黄色・紫、黒い枠と影、斜めの額縁、動く帯、ぬボタンを維持しています。ゲーム・配信紹介と創作エピソードは、4作品と制作過程に置き換えました。
 
-## 開発
+## ローカル確認
 
-Node.js 22.13以降。npm ci → npm run dev。npm run buildで配信用Workerを生成。
+Node.js 22.13以降。
 
-## 確認
+```text
+npm ci
+npm run build:pages
+npm run preview:pages
+```
 
-npm run build と npx tsc --noEmit、npx oxlint appを実施。HTTP応答を確認。
-ブラウザーによる画面幅別の目視・操作検証は未実施。
-全体のnpm run lintには、未使用のスターター同梱components/uiとhooksに既存の警告・エラーがある。アプリ固有コードの検査は通過。
+http://127.0.0.1:4382/yumeko-anime-teaser/ で草案を確認できます。ローカルの静的ファイルだけを配信し、アプリ本体やデータベースへ接続しません。
 
-## 素材・出典
+## デモ素材
 
-主役はhttps://x.com/Yumeko_TEKKEN/photo のアイコンを参照。本人のバナー画像は使用していない。
-ビルトインImageGenで描き起こした2表情をpublic/yumeko-hero.png、public/yumeko-reaction.pngに保存。元アイコンはpublic/yumeko-icon.png。
-生成画像は白い不透明背景。透明PNGとして扱わず、白い枠付きのビジュアル面へ配置した。好奇心モードには笑顔素材を再利用。
-完全な生成指示はdocs/asset-prompts.md。サイトの台詞・エピソードは創作であり、実際の発言や放送予定の告知ではない。
+`public/demos/` の4本はすべて、架空データで一から作った13秒の操作イメージです。実アプリの録画ではありません。独自の短編、会話台本、架空の育児記録、架空のデバイス名だけを使います。音声は含みません。
 
-## 公開
+各作品にMP4（H.264）、WebM、WebPポスター、日本語VTTを用意しています。動画は自動再生せず、通常の再生操作・シーク・全画面を使えます。テキスト説明、再生失敗時の静止画、同時再生の停止を含みます。
 
-公開サイト：https://blackbeatbeast.github.io/yumeko-anime-teaser/
+元アプリのコード、データ、設定、起動プロセス、個人の声、モデル、アカウントへ変更や接続を行っていません。非公開リポジトリや利用者固有のURLは紹介に含めません。MicBridgeの公開ソースだけへリンクします。
 
-GitHub Pages用は `npm run build:pages`。`dist/pages` に静的HTML・JS・画像を生成する。
-`main` への更新は `.github/workflows/pages.yml` で自動公開する。
-既存のSites版は引き続き `npm run build` で構築できる。
-静的出力にはサーバーへのリクエストが必要な機能を含めず、画面内リンクとReactの状態で操作する。
-Pages版の生成時にはHTMLと参照素材の存在、リポジトリ配下のURLを自動検証する。
+## 検証
 
-Sites用の設定は.openai/hosting.json。秘密情報や環境変数、依存関係、生成ビルドはGitへ含めない。
+`npm run build:pages`、`npx tsc --noEmit`、変更したアプリコードのoxlintが成功。専用の一時Chromeで320/390/768/1440pxの表示、水平はみ出し、ページエラー、4本の再生とシーク、Range応答、同時再生の停止、ぬボタン、キーボードでの説明展開、動き低減を確認しました。
 
+スクリーンショットと結果はGit対象外の `outputs/review/`。公開中Pagesの変更前画像も撮影しています。実iPhone/Safariや実アプリの機能テストは実施していません。
+
+全体lintには、未使用のスターター同梱UI/hooksの既存指摘があります。今回は変更したアプリコードを検査しています。
+
+## 素材の再生成と検証スクリプト
+
+通常ビルドには不要です。専用作業ディレクトリにツールを準備した環境で使います。
+
+```text
+npm install --prefix work/qa --no-save playwright ffmpeg-static
+```
+
+`PLAYWRIGHT_BROWSERS_PATH` をプロジェクト内の `work/browsers` に設定し、Playwrightの録画用ffmpegを取得後、`node scripts/generate-demo-assets.mjs`。元アプリを起動せず、すべての通信を拒否した架空HTMLだけを録画します。ローカルプレビューを起動して `node scripts/verify-showcase.mjs` で表示・動画を確認できます。
+
+## 公開とロールバック
+
+GitHub Pagesの既存構成を維持。`main`へpushすると `.github/workflows/pages.yml` が公開するため、この草案は公開前のレビュー用ブランチで保管します。公開/pushは未実施です。
+
+変更前：`checkpoint-20260930-before-showcase`（`2a661c7`）。戻す必要があればこのタグを選べます。
+
+既存キャラクターPNGは変更していません。素材由来と生成指示は `docs/asset-prompts.md`。主役は本人の公開Xアイコンを参考に描き起こした既存素材です。
