@@ -77,6 +77,8 @@ try {
     if(width===1440) {
       for(const id of ['bookvoice','aine','babylog','micbridge']) {
         const video=page.locator(`#${id} video`);
+        await video.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+        await page.waitForTimeout(200);
         await video.evaluate(async el=>{await el.play()});
         await page.waitForTimeout(300);
         const state=await video.evaluate(el=>({id:el.closest('article').id,duration:el.duration,currentTime:el.currentTime,error:el.error?.code,controls:el.controls,playsInline:el.playsInline,width:el.videoWidth,height:el.videoHeight,hasAudio:el.mozHasAudio||el.webkitAudioDecodedByteCount>0,track:el.textTracks[0]?.language}));
