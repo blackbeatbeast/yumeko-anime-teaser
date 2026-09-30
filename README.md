@@ -62,7 +62,9 @@ npm install --prefix work/qa --no-save playwright ffmpeg-static
 
 ## 公開とロールバック
 
-GitHub Pagesの既存構成を維持。`main`へpushすると `.github/workflows/pages.yml` が公開するため、この草案は公開前のレビュー用ブランチで保管します。公開/pushは未実施です。
+GitHub Pagesの既存構成を維持。`main`へのpushを `.github/workflows/pages.yml` がビルド・公開します。公開前にローカル表示を検証し、公開後は対象コミットのPages実行成功と実際の公開表示を確認します。
+
+最終調整では「＼ぬ／」が画面全体へ広がり、緩やかに揺れて落ちるようにしました。短い装飾文字だけにMochiy Pop Oneの3文字サブセット（1,064 bytes、OFL同梱）を使い、説明文を16px、注記を12pxに調整。`docs/final-polish.md` に出典と設計、`scripts/verify-final-polish.mjs` に画面範囲・連打・削除・動き低減・素材リンクの検証をまとめています。
 
 変更前：`checkpoint-20260930-before-showcase`（`2a661c7`）。戻す必要があればこのタグを選べます。
 

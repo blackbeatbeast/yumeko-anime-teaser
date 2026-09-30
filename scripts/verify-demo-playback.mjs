@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {writeFileSync} from 'node:fs';
 const {chromium}=await import('../work/qa/node_modules/playwright/index.mjs');
-const url='http://127.0.0.1:4382/yumeko-anime-teaser/';
+const url=process.env.SHOWCASE_URL || 'http://127.0.0.1:4382/yumeko-anime-teaser/';
+const reportFile=process.env.SHOWCASE_URL ? 'public-viewport-playback-verification.json' : 'viewport-playback-verification.json';
 const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 const report={widths:[],visibility:null,reduced:null,rejection:null,errors:[]};
 async function center(page,id){
@@ -19,7 +20,7 @@ async function newPage(options={}){
  const context=await browser.newContext({viewport:{width:1440,height:1000},...options});
  const page=await context.newPage();
  page.on('pageerror',e=>report.errors.push(e.message));
- await page.route('**/*',route=>route.request().url().startsWith('http://127.0.0.1:4382/')?route.continue():route.abort());
+ await page.route('**/*',route=>route.request().url().startsWith(new URL(url).origin+'/')?route.continue():route.abort());
  await page.goto(url,{waitUntil:'networkidle'});
  await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';});
  return page;
@@ -83,4 +84,4 @@ try{
  await rejected.close();
  assert.equal(report.errors.length,0);
  console.log(JSON.stringify(report));
-}finally{writeFileSync('outputs/review/viewport-playback-verification.json',JSON.stringify(report,null,2));await browser.close();}
+}finally{writeFileSync('outputs/review/'+reportFile,JSON.stringify(report,null,2));await browser.close();}

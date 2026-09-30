@@ -1,5 +1,6 @@
 /* Extend the existing anime teaser: original palette, portraits, frames,
    hero composition, ticker, footer and reduced-motion behavior are retained. */
+@font-face{font-family:'Yumeko Nu Pop';src:url('/yumeko-anime-teaser/fonts/yumeko-nu-pop.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap;unicode-range:U+306C,U+FF0F,U+FF3C}
 .showcase-hero .hero-copy h1{font-size:clamp(42px,5.2vw,82px)}
 .hero-mini-index{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:26px;font-size:11px;letter-spacing:.12em}
 .hero-mini-index>span:first-child{border-bottom:2px solid var(--ink);padding-bottom:4px;font-weight:800}
@@ -82,6 +83,35 @@ video:focus-visible,summary:focus-visible{outline:3px solid #70264e;outline-offs
 @media(max-width:360px){.showcase-hero .portrait-frame{width:250px;left:calc(50% - 125px)}.showcase-hero .sun-disc{width:280px;left:calc(50% - 140px)}.showcase-hero .speech-bubble{font-size:12px;padding:10px 14px}}
 @media(prefers-reduced-motion:reduce){.project-demo,.about-portrait{transform:none!important}}
 .nu-confetti{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:110}
-.nu-confetti>span{position:absolute;white-space:nowrap;font-weight:900;line-height:1.4;text-shadow:1px 1px var(--ink),-1px -1px var(--ink),1px -1px var(--ink),-1px 1px var(--ink);will-change:transform;animation:nu-rain var(--duration) var(--delay) both cubic-bezier(.2,.6,.6,1)}
-@keyframes nu-rain{0%{transform:translate(-50%,-50%) rotate(-8deg);opacity:0}5%{opacity:1}24%{transform:translate(calc(-50% + var(--spread)),var(--rise)) rotate(var(--turn))}42%{transform:translate(calc(-50% + var(--spread) + var(--sway)),calc(var(--rise) + 45px)) rotate(calc(var(--turn) - 45deg))}65%{transform:translate(calc(-50% + var(--spread) - var(--sway)),calc(var(--rise) + 210px)) rotate(calc(var(--turn) + 55deg))}100%{transform:translate(calc(-50% + var(--spread) + var(--sway)),110vh) rotate(calc(var(--turn) + 140deg));opacity:.9}}
+.nu-confetti>span{position:absolute;white-space:nowrap;font-weight:900;line-height:1.4;text-shadow:1px 1px var(--ink),-1px -1px var(--ink),1px -1px var(--ink),-1px 1px var(--ink);will-change:transform;animation:nu-rain var(--duration) var(--delay) both linear}
+.nu-confetti b{display:block;font-weight:inherit;animation:nu-flutter var(--flutter) var(--delay) infinite alternate ease-in-out}
+@keyframes nu-rain{
+  0%{transform:translate(-50%,-50%) scale(.25);opacity:0;animation-timing-function:cubic-bezier(.16,.72,.3,1)}
+  4%{opacity:1}
+  14%{transform:translate(calc(-50% + var(--spread) * .68),calc(var(--rise) * .86 - var(--arc))) scale(.9);animation-timing-function:cubic-bezier(.2,.65,.35,1)}
+  28%{transform:translate(calc(-50% + var(--spread)),var(--rise)) scale(1);animation-timing-function:cubic-bezier(.45,0,.65,.4)}
+  46%{transform:translate(calc(-50% + var(--spread) + var(--sway)),calc(var(--rise) + 45px));animation-timing-function:ease-in}
+  65%{transform:translate(calc(-50% + var(--spread) - var(--sway) * .6),calc(var(--rise) + (var(--fall) - var(--rise)) * .32));animation-timing-function:ease-in}
+  82%{transform:translate(calc(-50% + var(--spread) + var(--sway) * .5),calc(var(--rise) + (var(--fall) - var(--rise)) * .64));opacity:1;animation-timing-function:ease-in}
+  100%{transform:translate(calc(-50% + var(--spread) - var(--sway) * .25),var(--fall));opacity:.65}
+}
+@keyframes nu-flutter{from{transform:rotate(calc(var(--turn) - 14deg))}to{transform:rotate(calc(var(--turn) + 20deg))}}
+.nu-button:active{transform:rotate(-4deg) scale(.91)}
+.nu-pop.is-visible{transform:none;animation:nu-bloom .38s cubic-bezier(.2,.8,.25,1) both}
+@keyframes nu-bloom{0%{opacity:0;transform:translateY(5px) scale(.72) rotate(-5deg)}65%{opacity:1;transform:translateY(-2px) scale(1.06) rotate(2deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+.nu-confetti>span,.nu-pop,.nu-button,.hero-nu{font-family:'Yumeko Nu Pop','Yu Gothic','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;font-weight:400;font-synthesis:none}
+/* Keep the strong original headline. Give Japanese prose and small notes room. */
+.project-description{font-size:16px;font-weight:500;line-height:1.95}
+.project-note{font-size:13px;font-weight:500;line-height:1.85}
+.demo-disclosure,.demo-playback-note{font-size:12px;font-weight:500;line-height:1.85}
+.project-demo figcaption,.demo-stills,.demo-transcript{font-size:12px}
+.scene-link{font-size:12px}
+.journey-grid p{font-size:16px;line-height:1.9;font-weight:500}
+.journey-caption{font-size:13px;line-height:1.9;font-weight:500}
+.about-copy p{font-size:16px;line-height:1.95;font-weight:500}
+.hero-copy{animation:showcase-copy-in .78s .04s cubic-bezier(.2,.7,.2,1) both}
+.portrait-frame{animation:showcase-portrait-in .98s .1s cubic-bezier(.22,.7,.2,1) both}
+@keyframes showcase-copy-in{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes showcase-portrait-in{from{opacity:0;translate:24px 18px;rotate:-3deg}to{opacity:1;translate:0 0;rotate:0deg}}
+@media(max-width:640px){.project-copy h4{font-size:clamp(25px,7.2vw,29px);line-height:1.5}.nu-confetti>span{letter-spacing:-.025em}}
 @media(prefers-reduced-motion:reduce){.nu-confetti{display:none}.nu-pop.is-visible{animation:none!important}}

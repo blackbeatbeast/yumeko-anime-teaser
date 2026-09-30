@@ -52,18 +52,18 @@ try {
     assert(await page.locator('.nu-confetti').evaluate(el=>getComputedStyle(el).pointerEvents==='none'));
     assert.equal(await page.locator('.nu-confetti span').first().innerText(),'＼ぬ／');
     if (width===1440) {
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(1450);
       await page.screenshot({path:resolve(out,'nu-confetti-desktop.png')});
       for(let click=0;click<16;click++)await nuButton.click();
       assert(await page.locator('.nu-confetti span').count()<=72);
       const colors=await page.locator('.nu-confetti span').evaluateAll(items=>new Set(items.map(el=>getComputedStyle(el).color)).size);
       assert(colors>=5);
-      await page.waitForTimeout(4800);
+      await page.waitForTimeout(5300);
       assert.equal(await page.locator('.nu-confetti span').count(),0);
       await nuButton.focus();await page.keyboard.press('Enter');
       assert(await page.locator('.nu-confetti span').count()>0);
     } else if (width===390) {
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(1450);
       await page.screenshot({path:resolve(out,'nu-confetti-mobile.png')});
     }
     const summary = page.locator('.demo-transcript summary').first();

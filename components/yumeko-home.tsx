@@ -105,27 +105,45 @@ function NuWidget() {
     timeout.current = setTimeout(() => setNuVisible(false), 1600);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const rect = event.currentTarget.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     const colors = ['#f16dab', '#ffd34a', '#b79aff', '#7bdfca', '#ff9878', '#fff3bd'];
-    const batch = Array.from({ length: 18 }, (_, index) => ({
+    const cells = Array.from({ length: 24 }, (_, index) => index);
+    for (let index = cells.length - 1; index > 0; index--) {
+      const other = Math.floor(Math.random() * (index + 1));
+      [cells[index], cells[other]] = [cells[other], cells[index]];
+    }
+    // One particle in every cell keeps a single burst spread across the screen.
+    // The flight starts at the button; the gentle fall stays inside a fixed layer.
+    const batch = cells.map((cell, index) => {
+      const margin = width < 640 ? 44 : 62;
+      const targetX = margin + (width - margin * 2) * (cell % 6 + Math.random() * .7) / 5.7;
+      const targetY = height * (.05 + Math.floor(cell / 6) / 3 * .73 + Math.random() * .1);
+      return {
       id: ++serial.current,
       style: {
-        left: `${rect.left + rect.width / 2}px`, top: `${rect.top + rect.height / 2}px`,
+        left: `${originX}px`, top: `${originY}px`,
         color: colors[index % colors.length],
-        '--spread': `${(Math.random() - .68) * 460}px`,
-        '--rise': `${-100 - Math.random() * 210}px`,
-        '--sway': `${(Math.random() - .5) * 110}px`,
-        '--turn': `${(Math.random() - .5) * 200}deg`,
-        '--duration': `${3.2 + Math.random() * 1.1}s`,
-        '--delay': `${Math.random() * .12}s`,
-        fontSize: `${17 + Math.random() * 13}px`,
+        '--spread': `${targetX - originX}px`,
+        '--rise': `${targetY - originY}px`,
+        '--arc': `${height * .06}px`,
+        '--fall': `${height - originY + 100}px`,
+        '--sway': `${(index % 2 ? -1 : 1) * (12 + Math.random() * Math.min(width * .06, 55))}px`,
+        '--turn': `${(Math.random() - .5) * 32}deg`,
+        '--duration': `${4.05 + Math.random() * .65}s`,
+        '--flutter': `${.8 + Math.random() * .5}s`,
+        '--delay': `${index % 6 * .025 + Math.random() * .04}s`,
+        fontSize: `${(width < 640 ? 19 : 24) + Math.random() * (width < 640 ? 8 : 16)}px`,
       } as CSSProperties,
-    }));
+    }; });
     setConfetti(previous => [...previous, ...batch].slice(-72));
     const timer = setTimeout(() => {
       const ids = new Set(batch.map(particle => particle.id));
       setConfetti(previous => previous.filter(particle => !ids.has(particle.id)));
       cleanupTimers.current.delete(timer);
-    }, 4600);
+    }, 5100);
     cleanupTimers.current.add(timer);
   }
   useEffect(() => {
@@ -140,7 +158,7 @@ function NuWidget() {
     };
   }, []);
   return <>
-    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={() => setConfetti(previous => previous.filter(item => item.id !== particle.id))}>＼ぬ／</span>)}</div>
+    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={event => { if (event.target === event.currentTarget) setConfetti(previous => previous.filter(item => item.id !== particle.id)); }}><b>＼ぬ／</b></span>)}</div>
     <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="カラフルな、ぬを飛ばす">ぬ</button></div>
   </>;
 }
