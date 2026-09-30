@@ -60,18 +60,24 @@ function External({ href, children, className = '' }: { href: string; children: 
 
 function DemoVideo({ project }: { project: typeof projects[number] }) {
   const [failed, setFailed] = useState(false);
+  const sourceFailures = useRef(new Set<string>());
+  function cannotRead(format: string) {
+    sourceFailures.current.add(format);
+    if (sourceFailures.current.size === 2) setFailed(true);
+  }
   return <figure className={`project-demo ${project.id === 'babylog' ? 'project-demo-phone' : ''}`} style={{ '--screen-ratio': project.screenRatio } as CSSProperties}>
     <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name} / REAL UI</span><span aria-hidden="true">↗</span></div>
     {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の実際のUIと架空データ`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「動画の内容を読む」から確認できます。</p></div> : <video
       controls playsInline preload="none" poster={assetPath(`/demos/${project.id}.webp`)}
       aria-label={`${project.name}：実際のUIと架空データによる画面アニメーション。音声なし`}
-      onError={() => setFailed(true)}
+      onError={event => { if (event.currentTarget.error) setFailed(true); }}
+      onCanPlay={() => sourceFailures.current.clear()}
       onPlay={event => {
         document.querySelectorAll('video').forEach(video => { if (video !== event.currentTarget) video.pause(); });
       }}
     >
-      <source src={assetPath(`/demos/${project.id}.mp4`)} type="video/mp4" />
-      <source src={assetPath(`/demos/${project.id}.webm`)} type="video/webm" />
+      <source src={assetPath(`/demos/${project.id}.mp4`)} type="video/mp4" onError={() => cannotRead('mp4')} />
+      <source src={assetPath(`/demos/${project.id}.webm`)} type="video/webm" onError={() => cannotRead('webm')} />
       <track kind="captions" src={assetPath(`/demos/${project.id}.vtt`)} srcLang="ja" label="日本語" />
       このブラウザーは動画に対応していません。下のテキスト説明をご覧ください。
     </video>}
@@ -82,7 +88,7 @@ function DemoVideo({ project }: { project: typeof projects[number] }) {
   </figure>;
 }
 
-export default function Home() {
+function NuWidget() {
   const [nu, setNu] = useState(0);
   const [nuVisible, setNuVisible] = useState(false);
   const [confetti, setConfetti] = useState<{ id: number; style: CSSProperties }[]>([]);
@@ -129,6 +135,13 @@ export default function Home() {
       media.removeEventListener('change', calm);
     };
   }, []);
+  return <>
+    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={() => setConfetti(previous => previous.filter(item => item.id !== particle.id))}>＼ぬ／</span>)}</div>
+    <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="カラフルな、ぬを飛ばす">ぬ</button></div>
+  </>;
+}
+
+export default function Home() {
   return <>
     <a href="#main" className="skip-link">本文へ移動</a>
     <header className="site-header">
@@ -179,7 +192,6 @@ export default function Home() {
       </section>
       <footer><div className="footer-top"><span className="section-kicker">NEXT IDEA, PLEASE.</span><h2>次は、<span>なにつくる？</span></h2><div className="footer-links"><a className="button dark-button" href="#works">作品をもう一度 <ArrowUp size={20} aria-hidden="true" /></a><External className="button light-button" href={X_URL}>Xでゆめこに会う</External></div></div><div className="footer-bottom"><a className="wordmark" href="#top">ゆめこ<span>YUMEKO</span></a><p>ゆめこ、今日も創作中。<br /><span>AI / Codexとつくる、日常のアプリと制作の記録。</span></p><a className="back-top" href="#top" aria-label="ページの先頭へ"><ArrowUp size={22} /></a></div></footer>
     </main>
-    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={() => setConfetti(previous => previous.filter(item => item.id !== particle.id))}>＼ぬ／</span>)}</div>
-    <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="カラフルな、ぬを飛ばす">ぬ</button></div>
+    <NuWidget />
   </>;
 }
