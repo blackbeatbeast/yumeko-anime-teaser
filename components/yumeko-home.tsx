@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import Image from 'next/image';
 import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, MessageCircle, Baby, Mic, Sparkles, Play, Code2 } from 'lucide-react';
 import { assetPath } from '@/lib/assets';
@@ -14,7 +14,9 @@ const projects = [
     features: ['段落ごとの連続再生', '地の文・台詞の声分け', '読み上げ範囲の指定'],
     status: '開発ベータ', icon: BookOpen, color: 'yellow',
     note: 'PC向けの開発ベータ。iPhone連携は開発・検証中で、長時間再生などの確認が残っています。',
-    scenes: ['架空の短編「星を届ける郵便屋」を表示。', '読む範囲と地の文・台詞の声を選択。', '段落のハイライトで、連続再生の流れを再現。'],
+    scenes: ['架空の短編「風の郵便屋さん」を、実際の操作画面に表示。', '実際の「ページ範囲」で、1〜3ページを指定。', '「声と設定」で台詞の話し方を選ぶ。音声再生は行っていません。'],
+    captureNote: '本文表示領域だけを紹介用の短編に差し替えています。操作パネルは実際のUIです。',
+    screenRatio: '8 / 5',
   },
   {
     id: 'aine', number: '02', name: 'AINE', category: 'AIメッセンジャー', english: 'A CONVERSATION CONTINUES.',
@@ -23,7 +25,9 @@ const projects = [
     features: ['AIとのメッセージ・音声通話', '会話の整理', '会話の途中から分岐'],
     status: 'Windowsアプリ', icon: MessageCircle, color: 'purple',
     note: 'AIとの会話を扱うアプリ。動画の返答は紹介用の台本です。音声やAI接続の実演は含みません。',
-    scenes: ['架空の相手「ソラ」との会話を開く。', '「星の郵便屋の続きを考えよう」と入力する流れを再現。', '台本の返答を表示し、別の展開への分岐を見せる。'],
+    scenes: ['実際のAINE画面で、架空の相手「ソラ」との会話を開く。', '実際の入力欄に「その猫が持っていた切手は、どんな形だろう？」と入力。', 'デモモードで台本の返答を表示。AIや実在の相手には接続していません。'],
+    captureNote: '実際のUIを使い、会話は架空の相手と台本で作っています。AI接続・音声通話は含みません。',
+    screenRatio: '8 / 5',
   },
   {
     id: 'babylog', number: '03', name: '育児ログ', category: '記録・紙への書き写し', english: 'SMALL RECORDS. EVERY DAY.',
@@ -32,7 +36,9 @@ const projects = [
     features: ['スマホで記録', '保存直後の取り消し', '紙ビュー・印刷'],
     status: 'PWA', icon: Baby, color: 'pink',
     note: '動画の名前・日時・記録はすべて架空。記録を振り返るためのアプリで、医療上の診断や予測は行いません。',
-    scenes: ['架空の「こまめ」の記録画面を表示。', 'ミルク80mLの架空記録を追加する流れを再現。', '時刻順の紙ビューへ切り替え、書き写す順番を表示。'],
+    scenes: ['既存の確認用画面で、架空の「こまめ」の記録を表示。', '実際のミルク入力画面で、架空の80mLを保存。', '実際の紙ビューへ切り替え。記録は隔離画面の中だけで保存しています。'],
+    captureNote: '実際の確認用UIで架空の記録を入力しています。家族のデータや本番の保存先は使っていません。',
+    screenRatio: '22 / 45',
   },
   {
     id: 'micbridge', number: '04', name: 'IrodoriMicBridge', category: 'マイク・音声変換ブリッジ', english: 'YOUR WORDS, ANOTHER VOICE.',
@@ -40,8 +46,10 @@ const projects = [
     description: 'Windowsのマイク音声を文字にし、IrodoriTTSで生成した音声を仮想オーディオ出力へ。別アプリのマイク入力へつなぐ連携ツール。',
     features: ['マイク音声の文字起こし', 'テキストから音声生成', '仮想オーディオ出力'],
     status: '公開ソース', icon: Mic, color: 'yellow',
-    note: 'IrodoriTTSとの非公式連携ツール。仮想オーディオドライバーは別途必要です。動画は音声なしの処理イメージです。',
-    scenes: ['架空の入力・出力デバイスを表示。', '「今日は、星の郵便屋のお話です。」という文字起こし例を表示。', '文字から音声生成、仮想出力までの処理順を再現。'],
+    note: 'IrodoriTTSとの非公式連携ツール。仮想オーディオドライバーは別途必要です。ここでは操作画面を紹介しています。',
+    scenes: ['実際のUI部品を表示。デバイス名と状態は紹介用の架空データです。', '架空の文章を入力し、「Irodori音声」を選択する画面。', '「ミュート」へ切り替え。音声処理や実デバイスへの接続は行っていません。'],
+    captureNote: '実際のUI部品だけを描画しています。音声処理・マイク・外部サービスは動かしていません。',
+    screenRatio: '4 / 3',
     source: 'https://github.com/blackbeatbeast/IrodoriMicBridge',
   },
 ];
@@ -52,11 +60,11 @@ function External({ href, children, className = '' }: { href: string; children: 
 
 function DemoVideo({ project }: { project: typeof projects[number] }) {
   const [failed, setFailed] = useState(false);
-  return <figure className="project-demo">
-    <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name} / DEMO SCENE</span><span aria-hidden="true">↗</span></div>
-    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の架空データによる再現画面`} width={960} height={600} /><p>動画を再生できませんでした。下の「動画の内容を読む」から確認できます。</p></div> : <video
+  return <figure className={`project-demo ${project.id === 'babylog' ? 'project-demo-phone' : ''}`} style={{ '--screen-ratio': project.screenRatio } as CSSProperties}>
+    <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name} / REAL UI</span><span aria-hidden="true">↗</span></div>
+    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の実際のUIと架空データ`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「動画の内容を読む」から確認できます。</p></div> : <video
       controls playsInline preload="none" poster={assetPath(`/demos/${project.id}.webp`)}
-      aria-label={`${project.name}：架空データによる操作イメージ。音声なし`}
+      aria-label={`${project.name}：実際のUIと架空データによる画面アニメーション。音声なし`}
       onError={() => setFailed(true)}
       onPlay={event => {
         document.querySelectorAll('video').forEach(video => { if (video !== event.currentTarget) video.pause(); });
@@ -67,22 +75,60 @@ function DemoVideo({ project }: { project: typeof projects[number] }) {
       <track kind="captions" src={assetPath(`/demos/${project.id}.vtt`)} srcLang="ja" label="日本語" />
       このブラウザーは動画に対応していません。下のテキスト説明をご覧ください。
     </video>}
-    <figcaption><span><Play size={13} aria-hidden="true" /> 操作イメージ</span><span>約13秒・音声なし</span></figcaption>
-    <p className="demo-disclosure">架空データの再現画面です。実アプリの録画ではありません。</p>
-    <details className="demo-transcript"><summary>動画の内容を読む</summary><ol>{project.scenes.map(scene => <li key={scene}>{scene}</li>)}</ol></details>
+    <figcaption><span><Play size={13} aria-hidden="true" /> 実UI / 架空データ</span><span>13秒・音声なし</span></figcaption>
+    <p className="demo-disclosure">実UIのスクリーンショットをつないだ紹介用アニメーションです。データはすべて架空です。{project.captureNote}</p>
+    <div className="demo-stills"><a href={assetPath(`/demos/${project.id}.webp`)} target="_blank" rel="noreferrer">静止画を拡大 <ArrowUpRight size={13} aria-hidden="true" /><span className="sr-only">（新しいタブで開く）</span></a></div>
+    <details className="demo-transcript"><summary>動画の内容を読む</summary><ol>{project.scenes.map((scene, index) => <li key={scene}>{scene}<a className="scene-link" href={assetPath(`/demos/${project.id}-${index + 1}.webp`)} target="_blank" rel="noreferrer">この画面を拡大<span className="sr-only">（新しいタブで開く）</span><ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ol></details>
   </figure>;
 }
 
 export default function Home() {
   const [nu, setNu] = useState(0);
   const [nuVisible, setNuVisible] = useState(false);
+  const [confetti, setConfetti] = useState<{ id: number; style: CSSProperties }[]>([]);
+  const serial = useRef(0);
+  const cleanupTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function sayNu() {
+  function sayNu(event: React.MouseEvent<HTMLButtonElement>) {
     setNu(n => n + 1); setNuVisible(true);
     if (timeout.current) clearTimeout(timeout.current);
     timeout.current = setTimeout(() => setNuVisible(false), 1600);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const colors = ['#f16dab', '#ffd34a', '#b79aff', '#7bdfca', '#ff9878', '#fff3bd'];
+    const batch = Array.from({ length: 18 }, (_, index) => ({
+      id: ++serial.current,
+      style: {
+        left: `${rect.left + rect.width / 2}px`, top: `${rect.top + rect.height / 2}px`,
+        color: colors[index % colors.length],
+        '--spread': `${(Math.random() - .68) * 460}px`,
+        '--rise': `${-100 - Math.random() * 210}px`,
+        '--sway': `${(Math.random() - .5) * 110}px`,
+        '--turn': `${(Math.random() - .5) * 200}deg`,
+        '--duration': `${3.2 + Math.random() * 1.1}s`,
+        '--delay': `${Math.random() * .12}s`,
+        fontSize: `${17 + Math.random() * 13}px`,
+      } as CSSProperties,
+    }));
+    setConfetti(previous => [...previous, ...batch].slice(-72));
+    const timer = setTimeout(() => {
+      const ids = new Set(batch.map(particle => particle.id));
+      setConfetti(previous => previous.filter(particle => !ids.has(particle.id)));
+      cleanupTimers.current.delete(timer);
+    }, 4600);
+    cleanupTimers.current.add(timer);
   }
-  useEffect(() => () => { if (timeout.current) clearTimeout(timeout.current); }, []);
+  useEffect(() => {
+    const timers = cleanupTimers.current;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const calm = () => { if (media.matches) setConfetti([]); };
+    media.addEventListener('change', calm);
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+      timers.forEach(clearTimeout);
+      media.removeEventListener('change', calm);
+    };
+  }, []);
   return <>
     <a href="#main" className="skip-link">本文へ移動</a>
     <header className="site-header">
@@ -133,6 +179,7 @@ export default function Home() {
       </section>
       <footer><div className="footer-top"><span className="section-kicker">NEXT IDEA, PLEASE.</span><h2>次は、<span>なにつくる？</span></h2><div className="footer-links"><a className="button dark-button" href="#works">作品をもう一度 <ArrowUp size={20} aria-hidden="true" /></a><External className="button light-button" href={X_URL}>Xでゆめこに会う</External></div></div><div className="footer-bottom"><a className="wordmark" href="#top">ゆめこ<span>YUMEKO</span></a><p>ゆめこ、今日も創作中。<br /><span>AI / Codexとつくる、日常のアプリと制作の記録。</span></p><a className="back-top" href="#top" aria-label="ページの先頭へ"><ArrowUp size={22} /></a></div></footer>
     </main>
-    <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="ぬ、と言ってみる">ぬ</button></div>
+    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={() => setConfetti(previous => previous.filter(item => item.id !== particle.id))}>＼ぬ／</span>)}</div>
+    <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="カラフルな、ぬを飛ばす">ぬ</button></div>
   </>;
 }

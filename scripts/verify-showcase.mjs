@@ -8,6 +8,7 @@ const url = 'http://127.0.0.1:4382/yumeko-anime-teaser/';
 const browser = await chromium.launch({ executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe', headless:true });
 const report = { widths:[], media:[], before:null, errors:[] };
 try {
+  if (process.env.CAPTURE_PUBLIC_BASELINE === '1') {
   const before = await browser.newPage({ viewport:{width:1440,height:1000} });
   await before.route('**/*', route => route.request().url().startsWith('https://blackbeatbeast.github.io/yumeko-anime-teaser/') ? route.continue() : route.abort());
   try {
@@ -18,6 +19,7 @@ try {
     report.before = 'Live public GitHub Pages captured.';
   } catch (error) { report.before = `Public baseline unavailable: ${error.message.split('\n')[0]}`; }
   await before.close();
+  } else report.before = 'Earlier captured public baseline retained in outputs/review/before-*.png.';
 
   for (const width of [1440,768,390,320]) {
     const page = await browser.newPage({viewport:{width,height:width>700?1000:844}});
@@ -43,8 +45,27 @@ try {
     await page.screenshot({path:resolve(out,`hero-${width}.png`)});
     await page.locator('#bookvoice').screenshot({path:resolve(out,`bookvoice-${width}.png`)});
     await page.locator('#journey').screenshot({path:resolve(out,`journey-${width}.png`)});
-    await page.getByRole('button',{name:'ぬ、と言ってみる'}).click();
+    const nuButton=page.getByRole('button',{name:'カラフルな、ぬを飛ばす'});
+    await nuButton.click();
     await assert.doesNotReject(()=>page.locator('output').filter({hasText:'＼ぬ／'}).waitFor());
+    assert(await page.locator('.nu-confetti span').count()>0);
+    assert(await page.locator('.nu-confetti').evaluate(el=>getComputedStyle(el).pointerEvents==='none'));
+    assert.equal(await page.locator('.nu-confetti span').first().innerText(),'＼ぬ／');
+    if (width===1440) {
+      await page.waitForTimeout(600);
+      await page.screenshot({path:resolve(out,'nu-confetti-desktop.png')});
+      for(let click=0;click<16;click++)await nuButton.click();
+      assert(await page.locator('.nu-confetti span').count()<=72);
+      const colors=await page.locator('.nu-confetti span').evaluateAll(items=>new Set(items.map(el=>getComputedStyle(el).color)).size);
+      assert(colors>=5);
+      await page.waitForTimeout(4800);
+      assert.equal(await page.locator('.nu-confetti span').count(),0);
+      await nuButton.focus();await page.keyboard.press('Enter');
+      assert(await page.locator('.nu-confetti span').count()>0);
+    } else if (width===390) {
+      await page.waitForTimeout(600);
+      await page.screenshot({path:resolve(out,'nu-confetti-mobile.png')});
+    }
     const summary = page.locator('.demo-transcript summary').first();
     await summary.focus(); await page.keyboard.press('Enter');
     assert(await summary.evaluate(el=>el.parentElement.open));
@@ -58,7 +79,7 @@ try {
         const video=page.locator(`#${id} video`);
         await video.evaluate(async el=>{await el.play()});
         await page.waitForTimeout(300);
-        const state=await video.evaluate(el=>({id:el.closest('article').id,duration:el.duration,currentTime:el.currentTime,error:el.error?.code,controls:el.controls,playsInline:el.playsInline,hasAudio:el.mozHasAudio||el.webkitAudioDecodedByteCount>0,track:el.textTracks[0]?.language}));
+        const state=await video.evaluate(el=>({id:el.closest('article').id,duration:el.duration,currentTime:el.currentTime,error:el.error?.code,controls:el.controls,playsInline:el.playsInline,width:el.videoWidth,height:el.videoHeight,hasAudio:el.mozHasAudio||el.webkitAudioDecodedByteCount>0,track:el.textTracks[0]?.language}));
         assert(!state.error); assert(state.duration>12&&state.duration<14); assert(state.controls&&state.playsInline); assert(state.currentTime>0);
         await video.evaluate(async el=>{el.currentTime=8;el.pause();});
         report.media.push(state);
@@ -73,6 +94,10 @@ try {
       const reduced=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
       await reduced.goto(url,{waitUntil:'networkidle'});
       assert(await reduced.locator('video').first().evaluate(el=>el.paused&&!el.autoplay));
+      await reduced.getByRole('button',{name:'カラフルな、ぬを飛ばす'}).focus();
+      await reduced.keyboard.press('Space');
+      assert.equal(await reduced.locator('.nu-confetti span').count(),0);
+      assert.equal(await reduced.locator('output').innerText(),'＼ぬ／');
       await reduced.screenshot({path:resolve(out,'reduced-motion.png')});
       await reduced.close();
     }
