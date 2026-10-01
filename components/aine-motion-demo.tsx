@@ -1,121 +1,20 @@
 'use client';
-
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ArrowUp,
-  BookOpen,
-  ChevronDown,
-  ChevronLeft,
-  MessageCircle,
-  MousePointer2,
-  Pause,
-  Phone,
-  Play,
-  RotateCcw,
-  Search,
-  SlidersHorizontal,
-  Square,
-  VolumeX,
-} from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { ArrowUp, BookOpen, ChevronDown, ChevronLeft, MessageCircle, MousePointer2, Phone, Search, SlidersHorizontal, Square, VolumeX, Mic, Volume2, PhoneOff, GitBranch, Clock, MapPin, X } from 'lucide-react';
 import { assetPath } from '@/lib/assets';
-import {
-  registerMotionDemo,
-  requestMotionPlayback,
-  type MotionPresence,
-} from '@/lib/demo-playback';
-
-// Authored story and scripted replies; no application store, bridge or service.
+import FeatureDemo, { type FeatureState } from './feature-demo';
 const QUESTION = '星の切手で、どこへ手紙を届けよう？';
-const ANSWER =
-  '月の裏側の、小さな郵便局へ。\n封筒には「まだ見ぬ友だちへ」と書こう。';
-const DURATION = 11800;
-const STATIC_STEPS = [0, 3300, 4800, DURATION];
-
-function Avatar() {
-  return (
-    <svg className="aine-avatar" viewBox="0 0 42 42" aria-hidden="true">
-      <circle cx="21" cy="21" r="21" fill="#b9ccbd" />
-      <circle cx="21" cy="16" r="7" fill="#faf4df" />
-      <path d="M8 38v-5c0-13 26-13 26 0v5" fill="#faf4df" />
-    </svg>
-  );
-}
-
-export default function AineMotionDemo() {
-  const stage = useRef<HTMLDivElement>(null);
+const ANSWER = '月の裏側の、小さな郵便局へ。\n封筒には「まだ見ぬ友だちへ」と書こう。';
+const scenes = [
+  { label: 'メッセージ', title: 'ことばから、つながる。', detail: 'ひとこと送る。返事が届く。', duration: 11800 },
+  { label: '通話', title: '声で、つづきを。', detail: '好きな相手と、音声でも。', duration: 15500 },
+  { label: '分岐', title: 'もうひとつの、つづき。', detail: 'このひとことから、別の会話へ。', duration: 10500 },
+];
+function Avatar() { return <Image unoptimized className="aine-avatar" src={assetPath('/demos/sora-avatar.webp')} alt="" width={42} height={42} loading="lazy" />; }
+function MessageScene({ time, revision }: FeatureState) {
+  const elapsed = time;
   const history = useRef<HTMLDivElement>(null);
-  const clock = useRef(0);
-  const manualPause = useRef(false);
-  const visited = useRef(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [revision, setRevision] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [presence, setPresence] = useState<MotionPresence>({
-    active: false,
-    inView: false,
-    reduced: false,
-  });
-
-  const reset = useCallback(() => {
-    clock.current = 0;
-    setElapsed(0);
-    setRevision((value) => value + 1);
-  }, []);
-
-  useEffect(() => {
-    if (!stage.current) return;
-    return registerMotionDemo(stage.current, (next) => {
-      setPresence(next);
-      if (!next.inView) {
-        manualPause.current = false;
-        visited.current = false;
-        setPlaying(false);
-        return;
-      }
-      if (next.reduced) {
-        setPlaying(false);
-        clock.current = DURATION;
-        setElapsed(DURATION);
-        return;
-      }
-      if (!next.active) {
-        setPlaying(false);
-        return;
-      }
-      if (manualPause.current) return;
-      if (!visited.current) {
-        reset();
-        visited.current = true;
-      }
-      if (clock.current < DURATION) setPlaying(true);
-    });
-  }, [reset]);
-
-  useEffect(() => {
-    if (!playing) return;
-    let frame = 0;
-    let previous = performance.now();
-    let rendered = clock.current;
-    function tick(now: number) {
-      clock.current = Math.min(
-        DURATION,
-        clock.current + Math.min(now - previous, 80),
-      );
-      previous = now;
-      if (clock.current - rendered >= 40 || clock.current === DURATION) {
-        rendered = clock.current;
-        setElapsed(clock.current);
-      }
-      if (clock.current === DURATION) {
-        setPlaying(false);
-        return;
-      }
-      frame = requestAnimationFrame(tick);
-    }
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, revision]);
-
   const sent = elapsed >= 3800;
   const typing = elapsed >= 4300 && elapsed < 5550;
   const responding = elapsed >= 5550;
@@ -142,58 +41,7 @@ export default function AineMotionDemo() {
     if (element) element.scrollTop = element.scrollHeight;
   }, [response, sent, typing, revision]);
 
-  function replay() {
-    manualPause.current = false;
-    visited.current = true;
-    reset();
-    if (presence.reduced) return;
-    if (stage.current) requestMotionPlayback(stage.current);
-    setPlaying(true);
-  }
-  function toggle() {
-    if (playing) {
-      manualPause.current = true;
-      setPlaying(false);
-      return;
-    }
-    if (clock.current >= DURATION) {
-      replay();
-      return;
-    }
-    manualPause.current = false;
-    visited.current = true;
-    if (stage.current) requestMotionPlayback(stage.current);
-    setPlaying(true);
-  }
-  function nextStep() {
-    const next = STATIC_STEPS.find((value) => value > clock.current) ?? 0;
-    clock.current = next;
-    setElapsed(next);
-  }
-
-  return (
-    <figure
-      className="project-demo aine-motion"
-      id="aine-motion-demo"
-      aria-label="AINEのメッセージ送信の操作アニメーション"
-    >
-      <div className="demo-chrome">
-        <span>
-          <i />
-          <i />
-          <i />
-        </span>
-        <span>AINE</span>
-        <span aria-hidden="true">↗</span>
-      </div>
-      <div
-        ref={stage}
-        className={`aine-stage ${playing ? 'is-running' : ''} ${presence.reduced ? 'is-reduced' : ''}`}
-        data-phase={phase}
-        data-playing={playing}
-        data-elapsed={Math.round(elapsed)}
-      >
-        <div key={revision} className="aine-workspace" aria-hidden="true">
+  return (<div key={revision} className="aine-workspace" aria-hidden="true">
           <div className="aine-header">
             <ChevronLeft size={18} />
             <Avatar />
@@ -324,55 +172,65 @@ export default function AineMotionDemo() {
             fill="#ed65aa"
             strokeWidth={1.8}
           />
+        </div>);
+}
+
+function CallScene({ time }: FeatureState) {
+  const dialog = time < 2600;
+  const on = time >= 4300;
+  const talking = time >= 8500 && time < 12500;
+  const question = 'その郵便局、いっしょに行ってみたいな。';
+  const reply = 'もちろん。星の切手を一枚、持っていこう。';
+  return <div className="aine-call-scene">
+    {dialog ? <><div className="aine-call-backdrop"><Avatar /><strong>ソラ</strong><Phone size={30} /></div><div className="aine-dialog aine-call-start">
+      <div className="aine-dialog-heading"><strong>新しい通話</strong><X size={16} /></div>
+      <div className="aine-session-switch"><div><strong>メッセージを引き継ぐ</strong><small>ここまでのメッセージを使って話します。</small></div><i className={time >= 900 ? 'is-on' : ''} /></div>
+      <p>通話用の会話・出力ルールを使います。<br />マイクは開始後にオンにできます。</p>
+      <div className="aine-dialog-actions"><span>キャンセル</span><span className={time >= 2150 ? 'is-pressed' : ''}><Phone size={14} />通話を始める</span></div>
+    </div></> : <div className="aine-call-view">
+      <div className="aine-call-top"><span><ChevronLeft size={13} />トークへ戻る</span><span><i />通話中 <b>00:{String(Math.max(0, Math.floor((time - 2600) / 1000))).padStart(2, '0')}</b></span><span><SlidersHorizontal size={13} />声の設定</span></div>
+      <div className="aine-call-layout">
+        <div className="aine-call-person">
+          <span className="aine-call-world">風の郵便屋さん</span>
+          <div className={'aine-call-ring ' + (talking ? 'is-speaking' : on ? 'is-listening' : '')}><Avatar /></div>
+          <strong>ソラ</strong>
+          <span className="aine-call-status"><span className="aine-wave">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</span>{talking ? 'ソラが話しています' : on ? 'あなたの声を聞いています' : 'マイクをオンにするか、文字を入力'}</span>
+          <div className="aine-call-scene-info"><span><Clock size={12} />星の切手の旅</span><span><MapPin size={12} />郵便局</span></div>
+          <p>開始時までのメッセージを<br />引き継いでいます。</p>
+          <div className="aine-call-controls"><div><span className={on ? 'is-on' : ''}><Mic size={21} /></span><small>マイク {on ? 'オン' : 'オフ'}</small></div><div><span><Volume2 size={21} /></span><small>読み上げ オン</small></div><div><span className="is-end"><PhoneOff size={23} /></span><small>終了</small></div></div>
+        </div>
+        <div className="aine-call-transcript"><div><strong>会話のテキスト</strong><span>いつでも見返して、直せます。</span></div>
+          <div className="aine-call-turns">
+            {time < 6200 ? <p className="aine-call-welcome">音声または文字で話せます</p> : <div className="aine-message aine-outgoing"><div className="aine-bubble">{question}</div></div>}
+            {time >= 7700 && <div className="aine-message aine-response"><Avatar /><div className="aine-bubble">{reply.slice(0, Math.max(1, Math.floor((time - 7700) / 95)))}</div></div>}
+          </div><div className="aine-call-composer">ソラにメッセージを送る...<span><ArrowUp size={18} /></span></div>
         </div>
       </div>
-      <progress
-        className="aine-progress"
-        aria-label="操作アニメーションの進行"
-        value={elapsed}
-        max={DURATION}
-      />
-      <figcaption className="aine-motion-controls">
-        {presence.reduced ? (
-          <button
-            type="button"
-            onClick={nextStep}
-            aria-label="AINEの操作を次の場面へ進める"
-          >
-            次へ{' '}
-            <ArrowUp size={15} className="aine-next-arrow" aria-hidden="true" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={
-              playing
-                ? 'AINEのアニメーションを停止'
-                : 'AINEのアニメーションを再生'
-            }
-          >
-            {playing ? (
-              <Pause size={16} aria-hidden="true" />
-            ) : (
-              <Play size={16} aria-hidden="true" />
-            )}
-            {playing ? '止める' : '再生'}
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={replay}
-          aria-label="AINEのアニメーションを最初から見る"
-        >
-          <RotateCcw size={15} aria-hidden="true" />
-          もう一度
-        </button>
-      </figcaption>
-      <p className="sr-only">
-        ソラに「{QUESTION}」と送ると、「{ANSWER}
-        」と返答が届く流れを表示しています。
-      </p>
-    </figure>
-  );
+    </div>}
+    {time >= 2050 && time < 2550 && <MousePointer2 className="pv-pointer aine-start-pointer" fill="#ed65aa" size={25} />}
+    {time >= 3450 && time < 4700 && <MousePointer2 className="pv-pointer aine-mic-pointer" fill="#ed65aa" size={25} />}
+  </div>;
+}
+
+function BranchScene({ time }: FeatureState) {
+  const opened = time >= 1650 && time < 6600;
+  const created = time >= 6600;
+  const title = '風の郵便屋さん · 星を探す道';
+  return <div className="aine-branch-scene">
+    <div className="aine-header"><ChevronLeft size={18} /><Avatar /><div className="aine-heading"><strong>ソラ</strong><span>{created ? title : '風の郵便屋さん'}</span></div><GitBranch size={18} /></div>
+    <div className="aine-world" style={{ backgroundImage: 'url(' + assetPath('/demos/aine-world.webp') + ')' }}><div><span>この世界線の世界観</span><strong>{created ? '星を探す道' : '風の郵便屋さん'}</strong><p>星の切手を探す、小さな旅。</p></div></div>
+    <div className="aine-branch-history"><div className="aine-message"><Avatar /><div><span className="aine-author">ソラ</span><div className="aine-bubble">星の切手を一枚、持っていこう。</div><span className={'aine-branch-action ' + (time > 1000 ? 'is-selected' : '')}><GitBranch size={14} />分岐</span></div></div>
+      {created && <><div className="aine-story-divider"><GitBranch size={14} />分岐した会話</div><div className="aine-message aine-outgoing"><div className="aine-bubble">先に、星の切手を探してみよう。</div></div></>}
+    </div>
+    {opened && <div className="aine-modal-layer"><div className="aine-dialog aine-branch-dialog"><div className="aine-dialog-heading"><strong>このメッセージから会話を分岐</strong><X size={16} /></div><p>このメッセージまでの出来事を引き継ぎます。</p>
+      <div className="aine-branch-preview"><GitBranch size={24} /><div><strong>風の郵便屋さん</strong><p>星の切手を一枚、持っていこう。</p></div></div>
+      <label>分岐した会話の名前<span>{time < 2600 ? '風の郵便屋さん · もうひとつの続き' : title.slice(0, Math.max(1, Math.floor((time - 2600) / 80)))}</span></label>
+      <p>同じ世界線の中に、別の会話を作ります。<br />元の会話はそのまま残ります。</p><div className="aine-dialog-actions"><span>キャンセル</span><span className={time > 6050 ? 'is-pressed' : ''}><GitBranch size={14} />分岐して開く</span></div>
+    </div></div>}
+  </div>;
+}
+export default function AineMotionDemo() {
+  return <FeatureDemo id="aine" name="AINE" scenes={scenes} className="aine-stage" description="ソラへのメッセージを送信して返事を読む。メッセージを引き継いで音声通話を始め、会話のテキストを確認する。メッセージから別の会話を分岐する流れ。">
+    {state => state.index === 0 ? <MessageScene {...state} /> : state.index === 1 ? <CallScene {...state} /> : <BranchScene {...state} />}
+  </FeatureDemo>;
 }

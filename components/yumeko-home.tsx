@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, MessageCircle, Baby, Mic, S
 import { assetPath } from '@/lib/assets';
 import { registerDemoPlayback } from '@/lib/demo-playback';
 import AineMotionDemo from '@/components/aine-motion-demo';
+import { BabyMotionDemo, MicMotionDemo } from '@/components/app-feature-demos';
 
 const X_URL = 'https://x.com/Yumeko_TEKKEN';
 const projects = [
@@ -192,7 +193,7 @@ export default function Home() {
             <ul className="project-features">{project.features.map(feature => <li key={feature}>{feature}</li>)}</ul>
             {project.source && <External href={project.source} className="project-source"><Code2 size={17} aria-hidden="true" />公開ソースを見る</External>}
             {project.note && <p className="project-note">{project.note}</p>}
-          </div>{project.id === 'aine' ? <AineMotionDemo /> : <DemoVideo project={project} />}
+          </div>{project.id === 'aine' ? <AineMotionDemo /> : project.id === 'babylog' ? <BabyMotionDemo /> : project.id === 'micbridge' ? <MicMotionDemo /> : <DemoVideo project={project} />}
         </article>)}</div>
       </section>
 
