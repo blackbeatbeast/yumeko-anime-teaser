@@ -7,6 +7,7 @@ import { assetPath } from '@/lib/assets';
 import { registerDemoPlayback } from '@/lib/demo-playback';
 import AineMotionDemo from '@/components/aine-motion-demo';
 import { BabyMotionDemo, MicMotionDemo } from '@/components/app-feature-demos';
+import ProjectOpening from '@/components/project-opening';
 
 const X_URL = 'https://x.com/Yumeko_TEKKEN';
 const projects = [
@@ -63,6 +64,8 @@ function External({ href, children, className = '' }: { href: string; children: 
 
 function DemoVideo({ project }: { project: typeof projects[number] }) {
   const [failed, setFailed] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoTime, setVideoTime] = useState(Number.POSITIVE_INFINITY);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sourceFailures = useRef(new Set<string>());
   useEffect(() => {
@@ -75,17 +78,21 @@ function DemoVideo({ project }: { project: typeof projects[number] }) {
   }
   return <figure className={`project-demo ${project.id === 'babylog' ? 'project-demo-phone' : ''}`} style={{ '--screen-ratio': project.screenRatio } as CSSProperties}>
     <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name}</span><span aria-hidden="true">↗</span></div>
-    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の操作画面`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「操作の流れ」から確認できます。</p></div> : <video
+    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の操作画面`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「操作の流れ」から確認できます。</p></div> : <div className="video-opening-stage"><video
       ref={videoRef} controls muted playsInline preload="none" poster={assetPath(`/demos/${project.id}.webp`)}
       aria-label={`${project.name}の操作画面`}
       onError={event => { if (event.currentTarget.error) setFailed(true); }}
       onCanPlay={() => sourceFailures.current.clear()}
+      onPlay={event => { setVideoPlaying(true); setVideoTime(event.currentTarget.currentTime); }}
+      onPause={() => setVideoPlaying(false)}
+      onEnded={() => setVideoPlaying(false)}
+      onTimeUpdate={event => setVideoTime(event.currentTarget.currentTime)}
     >
       <source src={assetPath(`/demos/${project.id}.mp4`)} type="video/mp4" onError={() => cannotRead('mp4')} />
       <source src={assetPath(`/demos/${project.id}.webm`)} type="video/webm" onError={() => cannotRead('webm')} />
       <track kind="captions" src={assetPath(`/demos/${project.id}.vtt`)} srcLang="ja" label="日本語" />
       このブラウザーは動画に対応していません。下のテキスト説明をご覧ください。
-    </video>}
+    </video>{videoTime < 2 && <ProjectOpening id={project.id} running={videoPlaying} />}</div>}
     <div className="demo-stills"><a href={assetPath(`/demos/${project.id}.webp`)} target="_blank" rel="noreferrer">静止画を拡大 <ArrowUpRight size={13} aria-hidden="true" /><span className="sr-only">（新しいタブで開く）</span></a></div>
     <details className="demo-transcript"><summary>操作の流れ</summary><ol>{project.scenes.map((scene, index) => <li key={scene}>{scene}<a className="scene-link" href={assetPath(`/demos/${project.id}-${index + 1}.webp`)} target="_blank" rel="noreferrer">この画面を拡大<span className="sr-only">（新しいタブで開く）</span><ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ol></details>
   </figure>;

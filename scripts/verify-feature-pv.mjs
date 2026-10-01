@@ -23,9 +23,27 @@ try {
    const center = () => stage.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
    const clock = async ms => { await page.clock.runFor(ms); await page.waitForTimeout(60); };
    await center(); await clock(100);
-   for (let index = 0; index < 3; index++) {
+   const chapterCount = await demo.locator('.feature-chapters button').count();
+   for (let index = 0; index < chapterCount; index++) {
     await demo.locator('.feature-chapters button').nth(index).click();
-    await clock(index === 0 && id === 'aine' ? 6500 : index === 1 && id === 'aine' ? 10100 : id === 'babylog' && index === 0 ? 6300 : id === 'babylog' && index === 1 ? 6600 : id === 'micbridge' && index === 0 ? 5300 : id === 'micbridge' && index === 1 ? 6200 : 7300);
+    if (id === 'aine' && index === 1) {
+     await clock(6500);
+     assert((await demo.locator('.aine-call-composer').innerText()).includes('今、そっちはどんな景色'));
+     assert.equal(await demo.locator('.aine-call-turns .aine-outgoing').count(),0);
+     await clock(2300);
+     assert((await demo.locator('.aine-call-turns .aine-outgoing').innerText()).includes('今、そっちは'));
+     assert((await demo.locator('.aine-call-top').innerText()).includes('通話中'));
+     await clock(3300);
+     assert((await demo.locator('.aine-call-turns .aine-response').innerText()).includes('今度、一緒に歩こうね'));
+    } else if (id === 'micbridge' && index === 3) {
+     await clock(2400);
+     assert((await demo.locator('.route-recognition').innerText()).includes('音声を文字にしています'));
+     assert.equal(await demo.locator('.route-generation .route-wave.is-active').count(), 0);
+     await clock(3800);
+     assert((await demo.locator('.route-generation').innerText()).includes('声を生成しています'));
+     assert.equal(await demo.locator('.route-friend.is-heard').count(), 0);
+     await clock(4300);
+    } else await clock(index === 0 && id === 'aine' ? 6500 : index === 1 && id === 'aine' ? 10100 : id === 'babylog' && index === 0 ? 6300 : id === 'babylog' && index === 1 ? 6600 : id === 'micbridge' && index === 0 ? 5300 : id === 'micbridge' && index === 1 ? 6200 : 7300);
     if (await stage.getAttribute('data-playing') !== 'true') {
       const diagnostic = await stage.evaluate(el => ({ dataset: { ...el.dataset }, rect: el.getBoundingClientRect().toJSON(), height: innerHeight, hidden: document.hidden, scroll: scrollY }));
       console.log(JSON.stringify({ width, id, index, diagnostic }));
@@ -49,6 +67,7 @@ try {
     if (id === 'micbridge' && index === 0) assert(sceneText.includes('変換音声を出力中'));
     if (id === 'micbridge' && index === 1) assert(sceneText.includes('こんにちは。星の郵便局へ'));
     if (id === 'micbridge' && index === 2) assert(sceneText.includes('5.0'));
+    if (id === 'micbridge' && index === 3) { assert(sceneText.includes('Discordなどの通話相手')); assert(sceneText.includes('届くのは、選んだ声。')); assert.equal(await demo.locator('.route-virtual-mic.is-connected').count(), 1); }
     await page.screenshot({ path: `${out}/scene-${id}-${index}-${width}.png` });
     scenes.push({ id, index, pausedAt: stopped });
    }
@@ -78,7 +97,8 @@ try {
  for (const id of ids) {
   const demo = page.locator('#' + id + '-motion-demo');
   await demo.locator('.feature-stage').evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
-  for (let index = 0; index < 3; index++) {
+  const chapterCount = await demo.locator('.feature-chapters button').count();
+  for (let index = 0; index < chapterCount; index++) {
    await demo.locator('.feature-chapters button').nth(index).click();
    assert.equal(await demo.locator('.feature-stage').getAttribute('data-playing'), 'false');
    assert.equal(await demo.locator('.feature-scene').evaluate(el => getComputedStyle(el).animationName), 'none');
@@ -86,7 +106,7 @@ try {
   }
   await demo.getByRole('button', { name: /次の機能を見る$/ }).click();
   assert.equal(await demo.locator('.feature-stage').getAttribute('data-scene'), '0');
-  report.reduced.push({ id, autoplay: false, staticChapters: 3, next: true });
+  report.reduced.push({ id, autoplay: false, staticChapters: chapterCount, next: true });
  }
  await page.close();
  assert.equal(report.errors.length, 0);

@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, Pause, Play, RotateCcw } from 'lucide-react';
 import { registerMotionDemo, requestMotionPlayback, type MotionPresence } from '@/lib/demo-playback';
+import ProjectOpening from './project-opening';
 
 export type FeatureScene = { label: string; title: string; detail: string; duration: number };
 export type FeatureState = { time: number; index: number; playing: boolean; revision: number; reduced: boolean };
 function timing(scenes: FeatureScene[]) {
   const starts: number[] = [];
-  let duration = 0;
+  let duration = 2000;
   for (const scene of scenes) { starts.push(duration); duration += scene.duration; }
   return { starts, duration };
 }
@@ -31,6 +32,7 @@ export default function FeatureDemo({ id, name, scenes, phone = false, className
   for (let position = 1; position < starts.length; position++) { if (starts[position] <= elapsed) index = position; }
   const time = elapsed - starts[index];
   const scene = scenes[index];
+  const opening = !presence.reduced && (playing || elapsed > 0) && elapsed < 2000;
   const reset = useCallback((value = 0) => {
     clock.current = value;
     setElapsed(value);
@@ -90,16 +92,17 @@ export default function FeatureDemo({ id, name, scenes, phone = false, className
 
   return <figure className={`project-demo feature-demo ${phone ? 'project-demo-phone' : ''}`} id={`${id}-motion-demo`} aria-label={`${name}の機能紹介アニメーション`}>
     <div className="demo-chrome"><span><i /><i /><i /></span><span>{name}</span><span aria-hidden="true">↗</span></div>
-    <div className={`pv-caption ${time < 4000 || presence.reduced ? 'words-on' : ''}`} aria-hidden="true">
+    <div className={`pv-caption ${!opening && (time < 4000 || presence.reduced) ? 'words-on' : ''}`} aria-hidden="true">
       <span className="pv-caption-index">0{index + 1}<i /></span>
       <div key={`copy-${index}`}><strong>{scene.title}</strong><span>{scene.detail}</span></div>
       <span className="pv-caption-mark">✦</span>
     </div>
     <div ref={stage} className={`feature-stage ${className} ${playing ? 'is-running' : ''} ${presence.reduced ? 'is-reduced' : ''}`}
       data-demo={id} data-scene={index} data-playing={playing} data-elapsed={Math.round(elapsed)} data-duration={duration}>
-      <div key={`${index}-${revision}`} className="feature-scene" aria-hidden="true">
-        {children({ time: presence.reduced ? Math.max(0, scene.duration - 600) : time, index, playing, revision, reduced: presence.reduced })}
+      <div key={`${index}-${revision}`} className="feature-scene" aria-hidden="true" style={opening ? { opacity: Math.max(0, Math.min(1, (elapsed - 1550) / 450)) } : undefined}>
+        {children({ time: presence.reduced ? Math.max(0, scene.duration - 600) : Math.max(0, time), index, playing, revision, reduced: presence.reduced })}
       </div>
+      {opening && <ProjectOpening id={id} running={playing} />}
     </div>
     <progress className="aine-progress" aria-label={`${name}の紹介の進行`} value={elapsed} max={duration} />
     <figcaption className="feature-controls">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Activity, Baby, BarChart3, ChevronDown, Clock, Droplets, FileText, Mic, MicOff, Milk, Moon, MousePointer2, PenLine, Play, Power, Save, Settings, Sun, Thermometer, X } from 'lucide-react';
+import { Activity, AudioLines, Baby, BarChart3, ChevronDown, Clock, Droplets, FileText, Headphones, Mic, MicOff, Milk, Moon, MousePointer2, PenLine, Play, Power, Save, Settings, Sun, Thermometer, UserRound, X } from 'lucide-react';
 import FeatureDemo, { type FeatureState } from './feature-demo';
 
 const babyScenes = [
@@ -13,6 +13,7 @@ const micScenes = [
   { label: '出力モード', title: '生声も、AIの声も。', detail: '生声・Irodori音声・ミュートを切り替える。', duration: 10000 },
   { label: '文章入力', title: '文字が、別の声に。', detail: '書いたひとことを、マイクへ。', duration: 9500 },
   { label: '表現', title: '声の表情を、選ぶ。', detail: '話し方と、表現の強さを調整。', duration: 8500 },
+  { label: '通話へ', title: 'いつもの言葉を、別の声で。', detail: 'Discordなどの通話相手へ、仮想マイクを通して。', duration: 14000 },
 ];
 
 function DemoPointer({ className = '' }: { className?: string }) { return <MousePointer2 className={`pv-pointer ${className}`} size={25} fill="#ed65aa" strokeWidth={1.8} />; }
@@ -81,4 +82,32 @@ function MicWorkspace({ index, time }: FeatureState) {
     {index === 2 && time > 3100 && time < 4200 && <DemoPointer className="mic-strength-pointer" />}
   </div>;
 }
-export function MicMotionDemo() { return <FeatureDemo id="micbridge" name="IrodoriMicBridge" scenes={micScenes} className="mic-stage" description="生声・Irodori音声・ミュートの出力モードを切り替える。文章を入力して再生する。話し方のプリセットと表現の強さを調整する。">{state => <MicWorkspace {...state} />}</FeatureDemo>; }
+function VoiceWave({ active, generated = false }: { active: boolean; generated?: boolean }) {
+  return <span className={`route-wave ${active ? 'is-active' : ''} ${generated ? 'is-generated' : ''}`}>
+    {(generated ? [7, 15, 10, 24, 17, 31, 21, 12, 27, 16, 8, 20, 14] : [10, 5, 20, 12, 28, 17, 8, 25, 14, 7, 22, 12, 6]).map((height, i) => <i key={i} style={{ height, animationDelay: `${i * -0.09}s` }} />)}
+  </span>;
+}
+function MicCallStory({ time }: FeatureState) {
+  const spoken = time >= 1000;
+  const recognized = time >= 3500;
+  const generating = time >= 5000 && time < 7800;
+  const output = time >= 7800;
+  const received = time >= 9500;
+  const phrase = 'こんにちは。今日もよろしく！';
+  return <div className="mic-call-story">
+    <div className="route-person route-you"><div className="route-person-icon"><UserRound size={35} /></div><div><small>YOU / 話す人</small><strong>話すのは、いつもの自分。</strong><span className={'route-speech ' + (spoken ? 'is-shown' : '')}>{phrase}</span></div><VoiceWave active={spoken && !recognized} /></div>
+    <div className={'route-link route-input-link ' + (spoken ? 'is-ready' : '')}><i /><span>マイク入力</span></div>
+    <div className="route-app">
+      <div className="mic-header"><span className="mic-logo">{[12, 23, 30, 19, 26].map((height, i) => <i key={i} style={{ height }} />)}</span><div><strong>Irodori Mic Bridge</strong><small>LIVE VOICE ROUTER</small></div><span className="route-app-mode"><Activity size={13} />Irodori音声</span></div>
+      <div className="route-app-body">
+        <div className={'mic-panel route-recognition ' + (recognized ? 'is-complete' : '')}><div className="mic-panel-label">LAST RECOGNITION <span>01 / 音声 → 文字</span></div><p>{recognized ? phrase : spoken ? '音声を文字にしています…' : 'マイク入力を待っています'}</p></div>
+        <div className={'mic-panel route-generation ' + (output ? 'is-complete' : '')}><div className="mic-panel-label">IRODORI TTS <span>02 / 文字 → 別の声</span></div><div><span><small>VOICE / ソラ</small><strong>{output ? '生成した声を出力中' : generating ? '声を生成しています…' : '文字から音声を生成'}</strong></span><VoiceWave active={output && time < 12300} generated /></div></div>
+      </div>
+      <div className="mic-footer"><span>音声認識 → テキスト → 音声生成</span><span>{output ? 'PLAYING' : generating ? 'GENERATING' : 'READY'}</span></div>
+    </div>
+    <div className={'route-link route-output-link ' + (output ? 'is-ready' : '')}><i /><span>03 / 仮想オーディオ出力</span></div>
+    <div className="route-destination"><div className={'route-virtual-mic ' + (output ? 'is-connected' : '')}><Mic size={20} /><span>仮想マイク<small>通話アプリの入力へ</small></span></div><span className={'route-delivery ' + (received ? 'is-delivered' : '')}><i /><i /><i /></span><div className={'route-person route-friend ' + (received ? 'is-heard' : '')}><div className="route-person-icon"><Headphones size={28} /><UserRound size={22} /></div><div><small>Discordなどの通話相手</small><strong>{received ? '届くのは、選んだ声。' : '通話で、声を待つ相手。'}</strong></div></div></div>
+    <p className="route-note"><AudioLines size={13} />紹介用の架空シーン。仮想オーディオドライバーは別途必要です。</p>
+  </div>;
+}
+export function MicMotionDemo() { return <FeatureDemo id="micbridge" name="IrodoriMicBridge" scenes={micScenes} className="mic-stage" description="生声・Irodori音声・ミュートの出力モードを切り替える。文章を入力して再生する。話し方のプリセットと表現の強さを調整する。通話の紹介シーンでは、話す人の音声を文字にし、IrodoriTTSで別の声を生成して、仮想マイク経由でDiscordなどの通話相手へ届ける。認識と生成には処理時間があり、直接の瞬時変換ではない。実際の通話、マイク、音声生成は実行しない。">{state => state.index === 3 ? <MicCallStory {...state} /> : <MicWorkspace {...state} />}</FeatureDemo>; }

@@ -1,8 +1,8 @@
 # AINE operation animation study
 
 Local review only. The published GitHub Pages version remains `9cc75a1`.
-The current local draft expands AINE, the childcare log and IrodoriMicBridge
-into three feature chapters per work. BookVoice still uses the previously
+The current local draft expands AINE and the childcare log into three feature
+chapters per work, and IrodoriMicBridge into four. BookVoice still uses the previously
 approved video while its current BOOK☆WALKER reader reference is investigated.
 The new draft has not been pushed or deployed.
 
@@ -71,7 +71,7 @@ its App.tsx has subsequently changed in a separate committed revision, so a
 blanket claim that all current original hashes match the older copies would
 be incorrect. This site task has not written any original application file.
 
-`node scripts/verify-feature-pv.mjs` checks all three chapter presentations at
+`node scripts/verify-feature-pv.mjs` checks all ten feature chapters at
 1440, 768, 390 and 320 pixels. The mobile chapter-selection scroll issue was
 fixed by centering the selected workspace. TypeScript and targeted lint pass.
 Screenshots and detailed checks remain in ignored `outputs/feature-pv/`.
@@ -86,10 +86,57 @@ An isolated copy of the public viewer HTML/CSS, with its runtime removed and
 newly authored book pages, can render the native toolbar. It is a UI-only
 reference, not evidence of a live reader or successful audio generation.
 
-The user supplied a Library image as an illustration-style reference.
-The official materialization helper currently fails on Windows because
-Python's os.setxattr is unavailable. No final image file was installed and
-its pixels have not been inspected. Image generation is available, but the
-reference-based redraw is pending a working supported materialization path.
-The current local `sora-avatar.webp` is the earlier generated placeholder,
-not the requested final artwork. The reference itself must not be published.
+The Library materialization helper fails on Windows because Python's
+os.setxattr is unavailable. The user then explicitly supplied one local image
+path. Only that file was read and its pixels were inspected. It is the style
+reference, not either new generated character asset. The reference itself is
+not copied into the site. The parent generated an avatar and a matching outing
+selfie; their exact local save paths are still pending. The current local
+`sora-avatar.webp` is the earlier generated placeholder, not the final artwork.
+
+## Call story and abstract openings
+
+MicBridge's fourth chapter is an editorial use-case diagram, using the native
+dark interface at its center. A speaker's amber waveform becomes recognized
+text; a distinct teal waveform starts after a generation phase, then the
+virtual microphone delivers it to a fictional call partner. Discord is a
+possible receiving app, not an integration session or endorsed partner.
+The sequence does not assert instantaneous conversion or measured latency.
+No Discord account, service, setting or real person is involved.
+
+Each of the four exhibits has an approximately two-second, independently
+drawn abstract opening. Conversation shapes, paper fragments, rounded record
+shapes and changing waveforms use the site's existing palette and outlines.
+Openings pause with the presentation, reveal the UI without changing its
+height, and are skipped for reduced motion. Chapter selection goes directly
+to the selected operation; Replay includes the opening.
+`node scripts/verify-openings.mjs` verifies all four at 1440, 390 and 320 pixels.
+
+The audio-call text composer follows CallView's existing send path with the
+same call ID. AINE Beta's separate source reference verifies the requested
+photo linkage: minimizing retains the call component; the message timeline
+renders `SessionPhotos` from call transcripts under “通話の写真”. Photos do
+not appear directly inside the audio-call transcript. Native mini-call bar,
+photo card and image lightbox styles are reproduced in a separate scene.
+`lib/character-assets.ts` keeps this scene disabled until the requested
+fictional selfie is actually available. This pending branch has not yet been
+visually tested with final assets; the current preview runs the verified
+text-call sequence. Native image generation also pauses audio processing;
+the planned presentation includes this state instead of implying simultaneous
+GPU generation and uninterrupted speech. No original Beta app is launched.
+
+## Review state
+
+The original normal and Beta AINE repositories are clean in read-only Git
+checks. Original BookVoice controls/styles match their previously captured
+copies. App repository revisions may move independently of this site task.
+The task-owned preview serves HTTP 200 at port 4382 on loopback. A dedicated
+normal Chrome profile was verified visible (Chrome 154, 2560×1305); evidence
+is in ignored `outputs/feature-pv-visible/`. No new remote operation occurred.
+
+The missing BookVoice material is a current, fully rendered BOOK☆WALKER book
+page and its actual page/toolbar transitions inside the embedded reader.
+Public product/trial-link geometry and the public interface shell are known;
+they do not prove that body-viewer operation. The old BookVoice video remains
+until that source reference is resolved. It must not be described as an
+updated faithful BOOK☆WALKER operation demo or audio-engine verification.
