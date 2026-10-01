@@ -45,6 +45,21 @@ screenshots are under outputs/responsive-followup. Build, type and targeted
 lint checks and the existing four-width/13-chapter presentation regression are
 also used. Final results are recorded with the handoff checkpoint.
 
+The final 33-case matrix passes, including reduced motion, with no JavaScript
+errors or failed local assets. Six live resizes in one page pass (320 through
+3440 pixels), as do a runtime reduced-motion preference change and the
+JavaScript-disabled footer. The three reproduced short-height collisions now
+have no intersections. The final Pages build, TypeScript check and targeted
+lint also pass. Screenshots include baby-title-320.png, hero-641.png,
+ticker-wide-short.png, thanks-entering-mobile.png and footer-2048-328.png.
+The final built client also passes all thirteen chapter controls at 1440, 768,
+390 and 320 pixels: manual play/pause/replay, viewport switching, hidden-tab
+pause, no forced page movement, one selected demo, reduced motion and particle
+cleanup. Those results are in outputs/final-controls/verification.json.
+Matched before/after captures from public 9a004ca and the local follow-up are
+before/after-ticker-2048-195.png and before/after-footer-2048-328.png in the
+responsive output folder.
+
 Original app sources, data, accounts, services and microphone/device settings
 are untouched. The known live BOOKWALKER trial-runtime limitation remains in
 docs/concept-polish-local.md. No Downloads files were read for this follow-up.
