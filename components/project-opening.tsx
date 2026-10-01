@@ -7,7 +7,7 @@ export const OPENING_DURATION = 3600;
 const copy: Record<string, { title: string; line: string; small: string }> = {
   bookvoice: { title: 'BOOKVOICE', line: '本に、声を。', small: 'BOOK + VOICE + AI' },
   aine: { title: 'AINE', line: 'ことばも、声も。同じ相手と。', small: 'MESSAGE / CALL' },
-  babylog: { title: '育児ログ', line: '小さな毎日を、一枚に。', small: 'A LITTLE RECORD, EVERY DAY' },
+  babylog: { title: '育児\nログ', line: '小さな毎日を、一枚に。', small: 'A LITTLE RECORD, EVERY DAY' },
   micbridge: { title: 'Irodori\nMicBridge', line: '自分のことばを、選んだ声へ。', small: 'YOUR WORDS → ANOTHER VOICE' },
 };
 function Wave({ type = '' }: { type?: string }) {
@@ -45,6 +45,6 @@ export default function ProjectOpening({ id, running }: { id: string; running: b
         <svg className="op-mic-path" viewBox="0 0 440 190"><path d="M55 82C100 22 150 155 208 90S310 25 385 106" /></svg>
       </div>}
     </div>
-    <div className="op-title"><small>{text.small}</small><strong>{text.title}</strong><p>{text.line}</p><span className="op-title-tick" /></div>
+    <div className="op-title"><small>{text.small}</small><strong>{text.title.split('\n').map(line => <span className="op-title-line" key={line}>{line}</span>)}</strong><p>{text.line}</p><span className="op-title-tick" /></div>
   </div>;
 }

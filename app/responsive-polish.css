@@ -1,0 +1,18 @@
+/* Preserve the teaser art direction while reserving space for real content. */
+.hero-foot{position:absolute;inset-inline:5%;bottom:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;padding-right:74px}
+.hero-foot .hero-bottom{position:static;max-width:none;flex:1 1 160px}
+.hero-foot .scroll-label{position:static;width:auto;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;line-height:1.5;letter-spacing:.04em;flex:none}
+.showcase-hero .hero-art .hero-nu{bottom:140px}
+.ticker{--ticker-gap:clamp(24px,2.5vw,50px)}
+.ticker>.ticker-track{width:max-content;gap:0;transform:none;animation:ticker-travel var(--ticker-duration,60s) linear infinite;animation-play-state:paused}
+.ticker.is-running>.ticker-track{animation-play-state:running}
+.ticker-group{display:flex;flex:none}
+.ticker-unit{display:flex;align-items:center;white-space:nowrap;gap:var(--ticker-gap);padding-inline:calc(var(--ticker-gap)/2);flex:none}
+@keyframes ticker-travel{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.footer-top{padding-block:clamp(48px,4vw,72px)}
+@supports(font-size:1cqw){.op-title>strong{font-size:clamp(24px,10cqw,61px)}.opening-babylog .op-title>strong{font-size:clamp(38px,19cqw,65px)}.opening-micbridge .op-title>strong{font-size:clamp(24px,10cqw,53px)}}
+@media(min-width:1001px){.showcase-hero{min-height:820px}}
+@media(min-width:641px) and (max-width:1000px){.showcase-hero{min-height:max(690px,calc(270px + 52vw))}.showcase-hero .hero-art{right:2%}.showcase-hero .portrait-frame{width:85%;max-width:450px;left:5%}}
+@media(max-width:640px){.hero-foot{bottom:22px;gap:8px;padding-right:66px;flex-wrap:wrap}.hero-foot .hero-bottom{font-size:11px;letter-spacing:.04em}.hero-foot .scroll-label{font-size:10px}.showcase-hero .hero-art .hero-nu{bottom:140px}.footer-top{padding-block:48px}}
+@media(max-height:500px){.footer-top{padding-block:34px}.footer-links{margin-top:24px}.thank-you-finale{margin-top:16px;padding-top:28px;padding-bottom:58px}}
+@media(prefers-reduced-motion:reduce){.ticker>.ticker-track{animation:none!important;transform:none}}

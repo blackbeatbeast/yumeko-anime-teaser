@@ -74,7 +74,7 @@ function update() {
     const overlap = Math.min(rect.bottom, height * .85) - Math.max(rect.top, height * .15);
     const visible = Math.min(rect.bottom, height) - Math.max(rect.top, 0);
     const requestedVisible = player.requested && visible >= Math.min(rect.height * .2, 100);
-    return rect.width > 0 && (requestedVisible || center >= height * .2 && center <= height * .8 && overlap >= Math.min(rect.height * .5, 200));
+    return rect.width > 0 && (requestedVisible || center >= height * .2 && center <= height * .8 && overlap >= Math.min(rect.height * .5, 200, height * .55));
   }).sort((a, b) => {
     const distance = (player: MotionPlayer) => Math.abs(player.element.getBoundingClientRect().top + player.element.offsetHeight / 2 - height / 2);
     return distance(a) - distance(b);

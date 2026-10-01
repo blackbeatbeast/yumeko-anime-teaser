@@ -100,7 +100,7 @@ try{
   const finish=async()=>{await page.locator('.nu-particle').evaluateAll(els=>els.forEach(el=>el.getAnimations().forEach(a=>a.finish())));await page.waitForTimeout(100);};
   await finish();assert.equal(await page.locator('.nu-particle').count(),0);
   await page.locator('.nu-button').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('.nu-particle').count(),28);await finish();
-  await advance(2000);await page.locator('.thank-you-finale').evaluate(el=>window.__center(el));await advance(100);
+  await advance(2000);await page.locator('.thank-you-finale').evaluate(el=>window.__center(el));await advance(100);await advance(900);
   assert.equal(await page.locator('.nu-particle').count(),42);assert(await page.locator('.thank-you-finale').innerText().then(s=>s.includes('ここまで見てくれて')));
   assert(await page.evaluate(()=>document.fonts.check('24px "Yumeko Thanks"')));
   if(width===1440||width===390)await page.screenshot({path:`${out}/thank-you-${width}.png`});

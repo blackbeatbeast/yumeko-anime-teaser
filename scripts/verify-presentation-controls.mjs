@@ -58,7 +58,7 @@ try{
   await page.locator('.nu-particle').evaluateAll(els=>els.forEach(el=>el.getAnimations().forEach(a=>a.pause())));
   for(let i=0;i<6;i++)await page.locator('.nu-button').click();assert((await page.locator('.nu-particle').count())<=72);
   await tick(7300);assert.equal(await page.locator('.nu-particle').count(),0);
-  await page.locator('.thank-you-finale').evaluate(el=>window.__center(el));await tick(100);assert.equal(await page.locator('.nu-particle').count(),42);
+  await page.locator('.thank-you-finale').evaluate(el=>window.__center(el));await tick(100);await tick(900);assert.equal(await page.locator('.nu-particle').count(),42);
   await tick(7300);assert.equal(await page.locator('.nu-particle').count(),0);
   await page.evaluate(()=>scrollTo(0,0));await tick(100);await page.locator('.thank-you-finale').evaluate(el=>window.__center(el));await tick(100);assert.equal(await page.locator('.nu-particle').count(),0);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

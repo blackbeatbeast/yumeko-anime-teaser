@@ -8,6 +8,7 @@ import AineMotionDemo from '@/components/aine-motion-demo';
 import { BabyMotionDemo, MicMotionDemo } from '@/components/app-feature-demos';
 import NuWidget, { ThankYouFinale } from '@/components/nu-finale';
 import BookMotionDemo from '@/components/book-motion-demo';
+import SloganTicker from '@/components/slogan-ticker';
 
 const X_URL = 'https://x.com/Yumeko_TEKKEN';
 const projects = [
@@ -80,9 +81,9 @@ export default function Home() {
           <div className="hero-mini-index"><span>SELECTED WORKS</span><span>読書 / 会話 / 記録 / 声</span></div>
         </div>
         <div className="hero-art"><div className="sun-disc" /><div className="portrait-frame"><Image unoptimized className="hero-portrait" src={assetPath('/yumeko-hero.png')} width={1254} height={1254} fetchPriority="high" alt="ピンク髪に白い花と黄色い「ぬ」の髪飾り。得意げに笑うゆめこ" /><span className="frame-caption">ゆめこ / YUMEKO <span>好奇心、通常運転。</span></span></div><span className="speech-bubble">ちょっと欲しい。<br />じゃ、つくるか。</span><span className="hero-nu" aria-hidden="true">＼ぬ／</span><span className="art-star star-one" aria-hidden="true">✦</span><span className="art-star star-two" aria-hidden="true">✧</span></div>
-        <span className="hero-bottom">日常の「ちょっと」を、動くものに。</span><a className="scroll-label" href="#works">SCROLL TO WORKS <ArrowDown size={22} aria-hidden="true" /></a>
+        <div className="hero-foot"><span className="hero-bottom">日常の「ちょっと」を、動くものに。</span><a className="scroll-label" href="#works">SCROLL TO WORKS <ArrowDown size={22} aria-hidden="true" /></a></div>
       </section>
-      <div className="ticker" aria-hidden="true"><div>MAKE IT. <span>＼ぬ／</span> TRY IT. <span>YUMEKO!</span> FIX IT. <span>＼ぬ／</span> MAKE IT. <span>YUMEKO!</span></div></div>
+      <SloganTicker />
 
       <section className="works-section section" id="works" aria-labelledby="works-title">
         <div className="section-top works-heading"><div><span className="section-kicker">01 / SELECTED WORKS</span><h2 id="works-title">欲しかったから、<br /><span className="marker">つくってみた。</span></h2></div><p className="side-note">本を聴く。AIと話す。<br />記録する。声をつなぐ。<br />日常から生まれた、4つの作品。</p></div>

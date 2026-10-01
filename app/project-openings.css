@@ -1,4 +1,6 @@
 .video-opening-stage{position:relative}
+.feature-stage{container-type:inline-size}
+.op-title-line{display:block;white-space:nowrap}
 .pv-opening{position:absolute;inset:0;z-index:20;overflow:hidden;pointer-events:none;isolation:isolate;display:grid;place-items:center;background:#fff8ed;color:#29232b;--opening-play:paused;animation:op-reveal 3.6s linear both;animation-play-state:var(--opening-play)}
 .pv-opening.is-running{--opening-play:running}.pv-opening *{animation-play-state:var(--opening-play)!important}
 .op-grain{position:absolute;inset:0;background:radial-gradient(#bfa7b2 .8px,transparent .8px);background-size:9px 9px;opacity:.18}

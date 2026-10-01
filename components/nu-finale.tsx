@@ -24,21 +24,32 @@ function NuParticle({ particle, done }: { particle: Particle; done: (id: number)
 }
 
 export function ThankYouFinale() {
+  const mounted = useSyncExternalStore(subscribeClient, clientReady, serverReady);
   const marker = useRef<HTMLDivElement>(null);
   const once = useRef(false);
+  const [entered, setEntered] = useState(false);
   useEffect(() => {
     if (!marker.current) return;
-    const observer = new IntersectionObserver(entries => {
-      if (once.current || document.hidden || !entries.some(entry => entry.isIntersecting && entry.intersectionRatio > .5)) return;
+    let burstTimer: ReturnType<typeof setTimeout> | undefined;
+    const enter = () => {
+      if (once.current || document.hidden || !marker.current) return;
+      const rect = marker.current.getBoundingClientRect();
+      const overlap = Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0);
+      if (overlap < Math.min(rect.height * .4, innerHeight * .35, 120)) return;
       once.current = true;
-      window.dispatchEvent(new Event('yumeko:nu-finale'));
-    }, { threshold: [.5, .8] });
+      setEntered(true);
+      burstTimer = setTimeout(() => window.dispatchEvent(new Event('yumeko:nu-finale')), 460);
+    };
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) enter();
+    }, { threshold: [0, .1, .2, .3, .4, .5, .7] });
     observer.observe(marker.current);
-    return () => observer.disconnect();
+    document.addEventListener('visibilitychange', enter);
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', enter); if (burstTimer) clearTimeout(burstTimer); };
   }, []);
-  return <div className="thank-you-finale" ref={marker}>
+  return <div className={`thank-you-finale ${mounted ? 'is-armed' : ''} ${entered ? 'has-entered' : ''}`} ref={marker} data-entered={entered}>
     <div className="thank-you-stamps" aria-hidden="true"><span>＼ぬ／</span><span>＼ぬ／</span><span>＼ぬ／</span></div>
-    <p>ここまで見てくれて<br className="thanks-mobile-break" />ありがとう<span>！</span></p>
+    <p><span className="thanks-line">ここまで見てくれて</span><span className="thanks-line">ありがとう<span className="thanks-heart">！</span></span></p>
     <span className="thank-you-cue">もう一回、ぬ？<svg viewBox="0 0 120 70" aria-hidden="true"><path d="M4 8C50-1 23 53 82 44S112 39 112 62M101 53l12 10 4-14" /></svg></span>
   </div>;
 }
