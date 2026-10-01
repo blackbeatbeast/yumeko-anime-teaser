@@ -4,7 +4,7 @@
 .feature-stage{position:relative;overflow:hidden;--demo-play:paused;isolation:isolate}
 .feature-stage.is-running{--demo-play:running}
 .feature-scene{height:100%;position:relative;animation:pv-scene-in .42s cubic-bezier(.22,.8,.3,1) both;animation-play-state:var(--demo-play)}
-.pv-caption{min-height:90px;display:flex;align-items:center;gap:14px;padding:15px 19px;background:#fffaf0;border-bottom:1px solid var(--ink);position:relative;overflow:hidden}
+.pv-caption{height:120px;min-height:120px;display:flex;align-items:center;gap:14px;padding:15px 19px;background:#fffaf0;border-bottom:1px solid var(--ink);position:relative;overflow:hidden}
 .pv-caption-index{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:8px;align-items:center;flex:none;color:var(--feature-accent)}
 .pv-caption-index i{display:block;width:2px;height:22px;background:currentColor;transform:rotate(18deg)}
 .pv-caption>div{flex:1;min-width:0;opacity:0;transform:translateY(5px);transition:opacity .3s,transform .45s cubic-bezier(.22,.8,.3,1)}

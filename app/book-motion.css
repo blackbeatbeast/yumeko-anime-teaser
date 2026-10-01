@@ -1,0 +1,5 @@
+.book-stage{aspect-ratio:8/5;background:#f8f9f3}
+.book-native-scene,.book-native-scene>picture{height:100%;width:100%;display:block;position:relative}.book-native-scene img{display:block;width:100%;height:100%;object-fit:contain;animation:book-frame-in .35s ease both;animation-play-state:var(--demo-play)}.book-pointer{right:9%;bottom:4%;transform-origin:bottom right}.book-frame-shop .book-pointer{left:16%;top:66%;right:auto;bottom:auto}.book-frame-narration .book-pointer{left:85%;top:20%;right:auto;bottom:auto}
+@keyframes book-frame-in{from{opacity:.7}to{opacity:1}}
+@media(max-width:640px){.book-stage{aspect-ratio:360/700}.book-frame-shop .book-pointer{left:44%;top:61%}.book-frame-narration .book-pointer{left:76%;top:25%}.book-native-scene img{object-fit:fill}}
+@media(prefers-reduced-motion:reduce){.book-native-scene img{animation:none}}

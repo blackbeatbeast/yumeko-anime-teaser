@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import Image from 'next/image';
 import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, MessageCircle, Baby, Mic, Sparkles, Code2 } from 'lucide-react';
 import { assetPath } from '@/lib/assets';
-import { registerDemoPlayback } from '@/lib/demo-playback';
 import AineMotionDemo from '@/components/aine-motion-demo';
 import { BabyMotionDemo, MicMotionDemo } from '@/components/app-feature-demos';
-import ProjectOpening from '@/components/project-opening';
+import NuWidget, { ThankYouFinale } from '@/components/nu-finale';
+import BookMotionDemo from '@/components/book-motion-demo';
 
 const X_URL = 'https://x.com/Yumeko_TEKKEN';
 const projects = [
@@ -19,7 +19,7 @@ const projects = [
     status: '開発ベータ', icon: BookOpen, color: 'yellow',
     note: 'PC向けの開発ベータ。iPhone連携は開発・検証中で、長時間再生などの確認が残っています。',
     scenes: ["本の本文を開く。","ページ範囲から1〜3ページを指定する。","声の設定で台詞の話者を選ぶ。"],
-    captureNote: '本文表示領域だけを紹介用の短編に差し替えています。操作パネルは実際のUIです。',
+    captureNote: 'BookVoiceの実UIを隔離して撮影。BOOK☆WALKERの公開UIを参照し、本・著者・本文は架空にしています。音声生成は行いません。',
     screenRatio: '8 / 5',
   },
   {
@@ -28,9 +28,9 @@ const projects = [
     description: '相手と会話を選び、メッセージや音声通話でAIと話す。会話を整理したり、途中から別の展開へ分岐させたり。',
     features: ['AIとのメッセージ・音声通話', '会話の整理', '会話の途中から分岐'],
     status: 'Windowsアプリ', icon: MessageCircle, color: 'purple',
-    note: '',
+    note: '通話中の写真表示は画像ベータ版の画面です。紹介では架空の人物・生成画像を使っています。',
     scenes: ["ソラとの会話を開く。","入力欄に文章を書く。","送信した文章への返答を読む。"],
-    captureNote: '実際のUIを使い、会話は架空の相手と台本で作っています。AI接続・音声通話は含みません。',
+    captureNote: '実UIのデザイン・操作をもとにした紹介アニメーション。人物・会話・写真はすべて架空で、AIや通話には接続しません。',
     screenRatio: '8 / 5',
   },
   {
@@ -60,113 +60,6 @@ const projects = [
 
 function External({ href, children, className = '' }: { href: string; children: ReactNode; className?: string }) {
   return <a href={href} target="_blank" rel="noreferrer" className={className}>{children}<ArrowUpRight size={18} aria-hidden="true" /><span className="sr-only">（新しいタブで開く）</span></a>;
-}
-
-function DemoVideo({ project }: { project: typeof projects[number] }) {
-  const [failed, setFailed] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const [videoTime, setVideoTime] = useState(Number.POSITIVE_INFINITY);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const sourceFailures = useRef(new Set<string>());
-  useEffect(() => {
-    if (failed || !videoRef.current) return;
-    return registerDemoPlayback(videoRef.current);
-  }, [failed]);
-  function cannotRead(format: string) {
-    sourceFailures.current.add(format);
-    if (sourceFailures.current.size === 2) setFailed(true);
-  }
-  return <figure className={`project-demo ${project.id === 'babylog' ? 'project-demo-phone' : ''}`} style={{ '--screen-ratio': project.screenRatio } as CSSProperties}>
-    <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name}</span><span aria-hidden="true">↗</span></div>
-    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の操作画面`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「操作の流れ」から確認できます。</p></div> : <div className="video-opening-stage"><video
-      ref={videoRef} controls muted playsInline preload="none" poster={assetPath(`/demos/${project.id}.webp`)}
-      aria-label={`${project.name}の操作画面`}
-      onError={event => { if (event.currentTarget.error) setFailed(true); }}
-      onCanPlay={() => sourceFailures.current.clear()}
-      onPlay={event => { setVideoPlaying(true); setVideoTime(event.currentTarget.currentTime); }}
-      onPause={() => setVideoPlaying(false)}
-      onEnded={() => setVideoPlaying(false)}
-      onTimeUpdate={event => setVideoTime(event.currentTarget.currentTime)}
-    >
-      <source src={assetPath(`/demos/${project.id}.mp4`)} type="video/mp4" onError={() => cannotRead('mp4')} />
-      <source src={assetPath(`/demos/${project.id}.webm`)} type="video/webm" onError={() => cannotRead('webm')} />
-      <track kind="captions" src={assetPath(`/demos/${project.id}.vtt`)} srcLang="ja" label="日本語" />
-      このブラウザーは動画に対応していません。下のテキスト説明をご覧ください。
-    </video>{videoTime < 2 && <ProjectOpening id={project.id} running={videoPlaying} />}</div>}
-    <div className="demo-stills"><a href={assetPath(`/demos/${project.id}.webp`)} target="_blank" rel="noreferrer">静止画を拡大 <ArrowUpRight size={13} aria-hidden="true" /><span className="sr-only">（新しいタブで開く）</span></a></div>
-    <details className="demo-transcript"><summary>操作の流れ</summary><ol>{project.scenes.map((scene, index) => <li key={scene}>{scene}<a className="scene-link" href={assetPath(`/demos/${project.id}-${index + 1}.webp`)} target="_blank" rel="noreferrer">この画面を拡大<span className="sr-only">（新しいタブで開く）</span><ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ol></details>
-  </figure>;
-}
-
-function NuWidget() {
-  const [nu, setNu] = useState(0);
-  const [nuVisible, setNuVisible] = useState(false);
-  const [confetti, setConfetti] = useState<{ id: number; style: CSSProperties }[]>([]);
-  const serial = useRef(0);
-  const cleanupTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
-  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function sayNu(event: React.MouseEvent<HTMLButtonElement>) {
-    setNu(n => n + 1); setNuVisible(true);
-    if (timeout.current) clearTimeout(timeout.current);
-    timeout.current = setTimeout(() => setNuVisible(false), 1600);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const originX = rect.left + rect.width / 2;
-    const originY = rect.top + rect.height / 2;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const colors = ['#f16dab', '#ffd34a', '#b79aff', '#7bdfca', '#ff9878', '#fff3bd'];
-    const cells = Array.from({ length: 24 }, (_, index) => index);
-    for (let index = cells.length - 1; index > 0; index--) {
-      const other = Math.floor(Math.random() * (index + 1));
-      [cells[index], cells[other]] = [cells[other], cells[index]];
-    }
-    // One particle in every cell keeps a single burst spread across the screen.
-    // The flight starts at the button; the gentle fall stays inside a fixed layer.
-    const batch = cells.map((cell, index) => {
-      const margin = width < 640 ? 44 : 62;
-      const targetX = margin + (width - margin * 2) * (cell % 6 + Math.random() * .7) / 5.7;
-      const targetY = height * (.05 + Math.floor(cell / 6) / 3 * .73 + Math.random() * .1);
-      return {
-      id: ++serial.current,
-      style: {
-        left: `${originX}px`, top: `${originY}px`,
-        color: colors[index % colors.length],
-        '--spread': `${targetX - originX}px`,
-        '--rise': `${targetY - originY}px`,
-        '--arc': `${height * .06}px`,
-        '--fall': `${height - originY + 100}px`,
-        '--sway': `${(index % 2 ? -1 : 1) * (12 + Math.random() * Math.min(width * .06, 55))}px`,
-        '--turn': `${(Math.random() - .5) * 32}deg`,
-        '--duration': `${4.05 + Math.random() * .65}s`,
-        '--flutter': `${.8 + Math.random() * .5}s`,
-        '--delay': `${index % 6 * .025 + Math.random() * .04}s`,
-        fontSize: `${(width < 640 ? 19 : 24) + Math.random() * (width < 640 ? 8 : 16)}px`,
-      } as CSSProperties,
-    }; });
-    setConfetti(previous => [...previous, ...batch].slice(-72));
-    const timer = setTimeout(() => {
-      const ids = new Set(batch.map(particle => particle.id));
-      setConfetti(previous => previous.filter(particle => !ids.has(particle.id)));
-      cleanupTimers.current.delete(timer);
-    }, 5100);
-    cleanupTimers.current.add(timer);
-  }
-  useEffect(() => {
-    const timers = cleanupTimers.current;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const calm = () => { if (media.matches) setConfetti([]); };
-    media.addEventListener('change', calm);
-    return () => {
-      if (timeout.current) clearTimeout(timeout.current);
-      timers.forEach(clearTimeout);
-      media.removeEventListener('change', calm);
-    };
-  }, []);
-  return <>
-    <div className="nu-confetti" aria-hidden="true">{confetti.map(particle => <span key={particle.id} style={particle.style} onAnimationEnd={event => { if (event.target === event.currentTarget) setConfetti(previous => previous.filter(item => item.id !== particle.id)); }}><b>＼ぬ／</b></span>)}</div>
-    <div className="nu-widget"><output className={`nu-pop ${nuVisible ? 'is-visible' : ''}`} key={nu}>{nuVisible ? '＼ぬ／' : ''}</output><button type="button" className="nu-button" onClick={sayNu} aria-label="カラフルな、ぬを飛ばす">ぬ</button></div>
-  </>;
 }
 
 export default function Home() {
@@ -200,7 +93,7 @@ export default function Home() {
             <ul className="project-features">{project.features.map(feature => <li key={feature}>{feature}</li>)}</ul>
             {project.source && <External href={project.source} className="project-source"><Code2 size={17} aria-hidden="true" />公開ソースを見る</External>}
             {project.note && <p className="project-note">{project.note}</p>}
-          </div>{project.id === 'aine' ? <AineMotionDemo /> : project.id === 'babylog' ? <BabyMotionDemo /> : project.id === 'micbridge' ? <MicMotionDemo /> : <DemoVideo project={project} />}
+          </div>{project.id === 'aine' ? <AineMotionDemo /> : project.id === 'babylog' ? <BabyMotionDemo /> : project.id === 'micbridge' ? <MicMotionDemo /> : <BookMotionDemo />}
         </article>)}</div>
       </section>
 
@@ -218,7 +111,7 @@ export default function Home() {
         <div className="about-portrait"><Image unoptimized src={assetPath('/yumeko-reaction.png')} width={1254} height={1254} loading="lazy" alt="少し照れた表情の、ピンク髪のゆめこ" /><span>「ちょっと」が、ちょっとで終わらない。</span></div>
         <div className="about-copy"><span className="section-kicker">03 / ABOUT YUMEKO</span><h2 id="about-title">面白そう。<br />まず、触ってみる。</h2><p>ゆめこの制作室へようこそ。<br />AIやCodexとつくったアプリを、<br />ここに少しずつ並べています。</p><p>読書も、会話も、毎日の記録も。<br />身近な「欲しい」が、作品の入口です。</p><External href={X_URL} className="about-link">@Yumeko_TEKKEN</External></div>
       </section>
-      <footer><div className="footer-top"><span className="section-kicker">NEXT IDEA, PLEASE.</span><h2>次は、<span>なにつくる？</span></h2><div className="footer-links"><a className="button dark-button" href="#works">作品をもう一度 <ArrowUp size={20} aria-hidden="true" /></a><External className="button light-button" href={X_URL}>Xでゆめこに会う</External></div></div><div className="footer-bottom"><a className="wordmark" href="#top">ゆめこ<span>YUMEKO</span></a><p>ゆめこ、今日も創作中。<br /><span>AI / Codexとつくる、日常のアプリと制作の記録。</span></p><a className="back-top" href="#top" aria-label="ページの先頭へ"><ArrowUp size={22} /></a></div></footer>
+      <footer><div className="footer-top"><span className="section-kicker">NEXT IDEA, PLEASE.</span><h2>次は、<span>なにつくる？</span></h2><div className="footer-links"><a className="button dark-button" href="#works">作品をもう一度 <ArrowUp size={20} aria-hidden="true" /></a><External className="button light-button" href={X_URL}>Xでゆめこに会う</External></div></div><div className="footer-bottom"><a className="wordmark" href="#top">ゆめこ<span>YUMEKO</span></a><p>ゆめこ、今日も創作中。<br /><span>AI / Codexとつくる、日常のアプリと制作の記録。</span></p><a className="back-top" href="#top" aria-label="ページの先頭へ"><ArrowUp size={22} /></a></div><ThankYouFinale /></footer>
     </main>
     <NuWidget />
   </>;

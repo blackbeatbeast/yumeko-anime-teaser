@@ -199,7 +199,7 @@ function CallScene({ time }: FeatureState) {
           <div className={'aine-call-ring ' + (talking ? 'is-speaking' : on ? 'is-listening' : '')}><Avatar /></div>
           <strong>ソラ</strong>
           <span className="aine-call-status"><span className="aine-wave">{[0, 1, 2, 3, 4].map(i => <i key={i} />)}</span>{talking ? 'ソラが話しています' : on ? 'あなたの声を聞いています' : 'マイクをオンにするか、文字を入力'}</span>
-          <div className="aine-call-scene-info"><span><Clock size={12} />星の切手の旅</span><span><MapPin size={12} />郵便局</span></div>
+          <div className="aine-call-scene-info"><span><Clock size={12} />星の切手の旅</span><span><MapPin size={12} />{AINE_SELFIE && time >= 9400 ? 'カフェのテラス' : '郵便局'}</span></div>
           <p>開始時までのメッセージを<br />引き継いでいます。</p>
           <div className="aine-call-controls"><div><span className={on ? 'is-on' : ''}><Mic size={21} /></span><small>マイク {on ? 'オン' : 'オフ'}</small></div><div><span><Volume2 size={21} /></span><small>読み上げ オン</small></div><div><span className="is-end"><PhoneOff size={23} /></span><small>終了</small></div></div>
         </div>
@@ -207,7 +207,9 @@ function CallScene({ time }: FeatureState) {
           <div className="aine-call-turns">
             {!sent ? <p className="aine-call-welcome">音声または文字で話せます</p> : <div className="aine-message aine-outgoing"><div className="aine-bubble">{question}</div></div>}
             {time >= 9400 && <div className="aine-message aine-response"><Avatar /><div className="aine-bubble">{reply.slice(0, Math.max(1, Math.floor((time - 9400) / 80)))}</div></div>}
-          </div><div className={'aine-call-composer ' + (draft ? 'is-focused' : '')}><div>{draft || '話したいことを文字で送る…'}{draft && <i />}</div><span className={time >= 7550 && time < 8150 ? 'is-pressed' : ''}>{sent && time < 12900 ? <Square size={12} fill="currentColor" /> : <ArrowUp size={18} />}</span></div>
+          </div>
+          {AINE_SELFIE && <div className="aine-call-image-tools"><span className={time >= 3300 ? 'is-enabled' : ''}><Camera size={13} />{time >= 3300 ? '写真 おまかせ' : '写真 OFF'}<ChevronDown size={10} /></span>{time >= 3300 && <><small>Anima</small><span>写真をお願い</span></>}<SlidersHorizontal size={13} /></div>}
+          <div className={'aine-call-composer ' + (draft ? 'is-focused' : '')}><div>{draft || '話したいことを文字で送る…'}{draft && <i />}</div><span className={time >= 7550 && time < 8150 ? 'is-pressed' : ''}>{sent && time < 12900 ? <Square size={12} fill="currentColor" /> : <ArrowUp size={18} />}</span></div>
         </div>
       </div>
     </div>}
