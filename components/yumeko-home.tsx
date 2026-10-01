@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import Image from 'next/image';
-import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, MessageCircle, Baby, Mic, Sparkles, Play, Code2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, MessageCircle, Baby, Mic, Sparkles, Code2 } from 'lucide-react';
 import { assetPath } from '@/lib/assets';
 import { registerDemoPlayback } from '@/lib/demo-playback';
+import AineMotionDemo from '@/components/aine-motion-demo';
 
 const X_URL = 'https://x.com/Yumeko_TEKKEN';
 const projects = [
@@ -15,7 +16,7 @@ const projects = [
     features: ['段落ごとの連続再生', '地の文・台詞の声分け', '読み上げ範囲の指定'],
     status: '開発ベータ', icon: BookOpen, color: 'yellow',
     note: 'PC向けの開発ベータ。iPhone連携は開発・検証中で、長時間再生などの確認が残っています。',
-    scenes: ['架空の短編「風の郵便屋さん」を、実際の操作画面に表示。', '実際の「ページ範囲」で、1〜3ページを指定。', '「声と設定」で台詞の話し方を選ぶ。音声再生は行っていません。'],
+    scenes: ["本の本文を開く。","ページ範囲から1〜3ページを指定する。","声の設定で台詞の話者を選ぶ。"],
     captureNote: '本文表示領域だけを紹介用の短編に差し替えています。操作パネルは実際のUIです。',
     screenRatio: '8 / 5',
   },
@@ -25,8 +26,8 @@ const projects = [
     description: '相手と会話を選び、メッセージや音声通話でAIと話す。会話を整理したり、途中から別の展開へ分岐させたり。',
     features: ['AIとのメッセージ・音声通話', '会話の整理', '会話の途中から分岐'],
     status: 'Windowsアプリ', icon: MessageCircle, color: 'purple',
-    note: 'AIとの会話を扱うアプリ。動画の返答は紹介用の台本です。音声やAI接続の実演は含みません。',
-    scenes: ['実際のAINE画面で、架空の相手「ソラ」との会話を開く。', '実際の入力欄に「その猫が持っていた切手は、どんな形だろう？」と入力。', 'デモモードで台本の返答を表示。AIや実在の相手には接続していません。'],
+    note: '',
+    scenes: ["ソラとの会話を開く。","入力欄に文章を書く。","送信した文章への返答を読む。"],
     captureNote: '実際のUIを使い、会話は架空の相手と台本で作っています。AI接続・音声通話は含みません。',
     screenRatio: '8 / 5',
   },
@@ -36,8 +37,8 @@ const projects = [
     description: '授乳、ミルク、睡眠などをスマホで記録。時刻順の紙ビューで、あとから記録表へ書き写しやすくするPWA。',
     features: ['スマホで記録', '保存直後の取り消し', '紙ビュー・印刷'],
     status: 'PWA', icon: Baby, color: 'pink',
-    note: '動画の名前・日時・記録はすべて架空。記録を振り返るためのアプリで、医療上の診断や予測は行いません。',
-    scenes: ['既存の確認用画面で、架空の「こまめ」の記録を表示。', '実際のミルク入力画面で、架空の80mLを保存。', '実際の紙ビューへ切り替え。記録は隔離画面の中だけで保存しています。'],
+    note: '',
+    scenes: ["今日の記録を表示する。","ミルクの入力画面で80mLを記録する。","紙ビューで記録を一覧する。"],
     captureNote: '実際の確認用UIで架空の記録を入力しています。家族のデータや本番の保存先は使っていません。',
     screenRatio: '22 / 45',
   },
@@ -47,8 +48,8 @@ const projects = [
     description: 'Windowsのマイク音声を文字にし、IrodoriTTSで生成した音声を仮想オーディオ出力へ。別アプリのマイク入力へつなぐ連携ツール。',
     features: ['マイク音声の文字起こし', 'テキストから音声生成', '仮想オーディオ出力'],
     status: '公開ソース', icon: Mic, color: 'yellow',
-    note: 'IrodoriTTSとの非公式連携ツール。仮想オーディオドライバーは別途必要です。ここでは操作画面を紹介しています。',
-    scenes: ['実際のUI部品を表示。デバイス名と状態は紹介用の架空データです。', '架空の文章を入力し、「Irodori音声」を選択する画面。', '「ミュート」へ切り替え。音声処理や実デバイスへの接続は行っていません。'],
+    note: 'IrodoriTTSとの非公式連携ツール。仮想オーディオドライバーは別途必要です。',
+    scenes: ["入出力の操作画面を開く。","文章を入力し、Irodori話者を選ぶ。","出力モードをミュートに切り替える。"],
     captureNote: '実際のUI部品だけを描画しています。音声処理・マイク・外部サービスは動かしていません。',
     screenRatio: '4 / 3',
     source: 'https://github.com/blackbeatbeast/IrodoriMicBridge',
@@ -72,10 +73,10 @@ function DemoVideo({ project }: { project: typeof projects[number] }) {
     if (sourceFailures.current.size === 2) setFailed(true);
   }
   return <figure className={`project-demo ${project.id === 'babylog' ? 'project-demo-phone' : ''}`} style={{ '--screen-ratio': project.screenRatio } as CSSProperties}>
-    <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name} / REAL UI</span><span aria-hidden="true">↗</span></div>
-    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の実際のUIと架空データ`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「動画の内容を読む」から確認できます。</p></div> : <video
+    <div className="demo-chrome"><span><i /><i /><i /></span><span>{project.name}</span><span aria-hidden="true">↗</span></div>
+    {failed ? <div className="video-fallback"><Image unoptimized src={assetPath(`/demos/${project.id}.webp`)} alt={`${project.name}の操作画面`} width={project.id === 'babylog' ? 440 : 1200} height={project.id === 'babylog' || project.id === 'micbridge' ? 900 : 750} /><p>動画を再生できませんでした。下の「操作の流れ」から確認できます。</p></div> : <video
       ref={videoRef} controls muted playsInline preload="none" poster={assetPath(`/demos/${project.id}.webp`)}
-      aria-label={`${project.name}：実際のUIと架空データによる画面アニメーション。音声なし`}
+      aria-label={`${project.name}の操作画面`}
       onError={event => { if (event.currentTarget.error) setFailed(true); }}
       onCanPlay={() => sourceFailures.current.clear()}
     >
@@ -84,11 +85,8 @@ function DemoVideo({ project }: { project: typeof projects[number] }) {
       <track kind="captions" src={assetPath(`/demos/${project.id}.vtt`)} srcLang="ja" label="日本語" />
       このブラウザーは動画に対応していません。下のテキスト説明をご覧ください。
     </video>}
-    <figcaption><span><Play size={13} aria-hidden="true" /> 実UI / 架空データ</span><span>13秒・音声なし</span></figcaption>
-    <p className="demo-playback-note">画面中央で無音再生。手動で停止・再生できます。</p>
-    <p className="demo-disclosure">実UIのスクリーンショットをつないだ紹介用アニメーションです。データはすべて架空です。{project.captureNote}</p>
     <div className="demo-stills"><a href={assetPath(`/demos/${project.id}.webp`)} target="_blank" rel="noreferrer">静止画を拡大 <ArrowUpRight size={13} aria-hidden="true" /><span className="sr-only">（新しいタブで開く）</span></a></div>
-    <details className="demo-transcript"><summary>動画の内容を読む</summary><ol>{project.scenes.map((scene, index) => <li key={scene}>{scene}<a className="scene-link" href={assetPath(`/demos/${project.id}-${index + 1}.webp`)} target="_blank" rel="noreferrer">この画面を拡大<span className="sr-only">（新しいタブで開く）</span><ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ol></details>
+    <details className="demo-transcript"><summary>操作の流れ</summary><ol>{project.scenes.map((scene, index) => <li key={scene}>{scene}<a className="scene-link" href={assetPath(`/demos/${project.id}-${index + 1}.webp`)} target="_blank" rel="noreferrer">この画面を拡大<span className="sr-only">（新しいタブで開く）</span><ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ol></details>
   </figure>;
 }
 
@@ -193,8 +191,8 @@ export default function Home() {
             <h3 id={`${project.id}-title`}>{project.name}</h3><span className="project-english">{project.english}</span><h4>{project.headline}</h4><p className="project-description">{project.description}</p>
             <ul className="project-features">{project.features.map(feature => <li key={feature}>{feature}</li>)}</ul>
             {project.source && <External href={project.source} className="project-source"><Code2 size={17} aria-hidden="true" />公開ソースを見る</External>}
-            <p className="project-note">{project.note}</p>
-          </div><DemoVideo project={project} />
+            {project.note && <p className="project-note">{project.note}</p>}
+          </div>{project.id === 'aine' ? <AineMotionDemo /> : <DemoVideo project={project} />}
         </article>)}</div>
       </section>
 

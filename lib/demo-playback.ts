@@ -10,10 +10,25 @@ type Player = {
   request: number;
 };
 const players = new Map<HTMLVideoElement, Player>();
+export type MotionPresence = { active: boolean; inView: boolean; reduced: boolean };
+type MotionPlayer = { element: HTMLElement; notify: (presence: MotionPresence) => void; presence: MotionPresence | null };
+const motions = new Map<HTMLElement, MotionPlayer>();
 let selected: Player | null = null;
 let observer: IntersectionObserver | null = null;
 let motion: MediaQueryList | null = null;
 let frame = 0;
+
+function notifyMotion(player: MotionPlayer, presence: MotionPresence) {
+  const previous = player.presence;
+  if (previous && previous.active === presence.active && previous.inView === presence.inView && previous.reduced === presence.reduced) return;
+  player.presence = presence;
+  player.notify(presence);
+}
+
+function motionPresence(player: MotionPlayer, active = false): MotionPresence {
+  const rect = player.element.getBoundingClientRect();
+  return { active, inView: rect.bottom > 0 && rect.top < innerHeight && rect.width > 0, reduced: Boolean(motion?.matches) };
+}
 
 function pause(player: Player) {
   player.request++;
@@ -31,6 +46,7 @@ function update() {
   if (document.hidden) {
     players.forEach(pause);
     selected = null;
+    motions.forEach(player => notifyMotion(player, motionPresence(player)));
     return;
   }
   const height = window.innerHeight;
@@ -51,12 +67,27 @@ function update() {
       candidates.push({ player, distance: Math.abs(rect.top + rect.height / 2 - height / 2) });
     }
   });
+  const motionCandidates = [...motions.values()].filter(player => {
+    const rect = player.element.getBoundingClientRect();
+    const center = rect.top + rect.height / 2;
+    const overlap = Math.min(rect.bottom, height * .85) - Math.max(rect.top, height * .15);
+    return rect.width > 0 && center >= height * .2 && center <= height * .8 && overlap >= Math.min(rect.height * .5, 200);
+  }).sort((a, b) => {
+    const distance = (player: MotionPlayer) => Math.abs(player.element.getBoundingClientRect().top + player.element.offsetHeight / 2 - height / 2);
+    return distance(a) - distance(b);
+  });
   if (motion?.matches) {
     players.forEach(player => { if (player.automatic || player.autoIntent) pause(player); });
+    motions.forEach(player => notifyMotion(player, motionPresence(player)));
     return;
   }
   candidates.sort((a, b) => a.distance - b.distance);
-  selected = candidates[0]?.player ?? null;
+  const nearestMotion = motionCandidates[0];
+  const motionRect = nearestMotion?.element.getBoundingClientRect();
+  const motionDistance = motionRect ? Math.abs(motionRect.top + motionRect.height / 2 - height / 2) : Infinity;
+  const activeMotion = motionDistance < (candidates[0]?.distance ?? Infinity) ? nearestMotion : undefined;
+  selected = activeMotion ? null : candidates[0]?.player ?? null;
+  motions.forEach(player => notifyMotion(player, motionPresence(player, player === activeMotion)));
   players.forEach(player => { if (player !== selected) pause(player); });
   const player = selected;
   if (!player || player.manualPause || player.completed || player.blocked || player.pending || !player.video.paused) return;
@@ -88,6 +119,7 @@ function visibilityChanged() {
     frame = 0;
     players.forEach(pause);
     selected = null;
+    motions.forEach(player => notifyMotion(player, motionPresence(player)));
   } else schedule();
 }
 
@@ -102,7 +134,7 @@ function setup() {
 
 /** Shared coordination gives each page one silent, viewport-selected clip. */
 export function registerDemoPlayback(video: HTMLVideoElement): () => void {
-  if (!players.size) setup();
+  if (!players.size && !motions.size) setup();
   const player: Player = { video, manualPause: false, completed: false, blocked: false, autoIntent: false, automatic: false, pending: false, policyPauses: 0, request: 0 };
   players.set(video, player);
   video.muted = true;
@@ -126,6 +158,7 @@ export function registerDemoPlayback(video: HTMLVideoElement): () => void {
     }
     player.automatic = automatic;
     players.forEach(other => { if (other !== player) pause(other); });
+    motions.forEach(other => notifyMotion(other, motionPresence(other)));
   };
   const onPause = () => {
     player.automatic = false;
@@ -147,15 +180,32 @@ export function registerDemoPlayback(video: HTMLVideoElement): () => void {
     pause(player);
     players.delete(video);
     if (selected === player) selected = null;
-    if (players.size) schedule();
-    else {
-      observer?.disconnect(); observer = null;
-      motion?.removeEventListener('change', schedule); motion = null;
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-      document.removeEventListener('visibilitychange', visibilityChanged);
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-    }
+    teardownIfEmpty();
   };
+}
+
+function teardownIfEmpty() {
+  if (players.size || motions.size) { schedule(); return; }
+  observer?.disconnect(); observer = null;
+  motion?.removeEventListener('change', schedule); motion = null;
+  window.removeEventListener('scroll', schedule);
+  window.removeEventListener('resize', schedule);
+  document.removeEventListener('visibilitychange', visibilityChanged);
+  if (frame) cancelAnimationFrame(frame);
+  frame = 0;
+}
+
+/** HTML demonstrations and videos share the same viewport selection. */
+export function registerMotionDemo(element: HTMLElement, notify: MotionPlayer['notify']): () => void {
+  if (!players.size && !motions.size) setup();
+  const player: MotionPlayer = { element, notify, presence: null };
+  motions.set(element, player);
+  observer?.observe(element);
+  schedule();
+  return () => { observer?.unobserve(element); motions.delete(element); teardownIfEmpty(); };
+}
+
+export function requestMotionPlayback(element: HTMLElement) {
+  players.forEach(pause);
+  motions.forEach(player => notifyMotion(player, motionPresence(player, player.element === element)));
 }
