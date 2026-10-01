@@ -17,7 +17,8 @@ function NuParticle({ particle, done }: { particle: Particle; done: (id: number)
       { transform: `translate(-50%,-50%) rotate(${particle.tilt + particle.swing}deg) scaleX(1)` },
     ], { duration: particle.flutter, delay: -particle.flutter * Math.random(), direction: 'alternate', iterations: Infinity, easing: 'ease-in-out' });
     void flight.finished.then(() => done(particle.id)).catch(() => {});
-    return () => { flight.cancel(); flutter?.cancel(); };
+    const cutoff = setTimeout(() => done(particle.id), particle.duration + particle.delay + 150);
+    return () => { clearTimeout(cutoff); flight.cancel(); flutter?.cancel(); };
   }, [particle, done]);
   return <span ref={element} className="nu-particle" style={{ color: particle.color, fontSize: particle.size } as CSSProperties}><b>＼ぬ／</b></span>;
 }

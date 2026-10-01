@@ -1,5 +1,9 @@
 # AINE operation animation study
 
+This earlier study is superseded by [the current concept revision](concept-polish-local.md).
+The current local draft includes newly generated character art, call photos,
+BookVoice UI screenshots, concept openings, organic Nu and the closing message.
+
 Local review only. The published GitHub Pages version remains `9cc75a1`.
 The current local draft expands AINE and the childcare log into three feature
 chapters per work, and IrodoriMicBridge into four. BookVoice still uses the previously

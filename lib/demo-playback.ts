@@ -11,7 +11,7 @@ type Player = {
 };
 const players = new Map<HTMLVideoElement, Player>();
 export type MotionPresence = { active: boolean; inView: boolean; reduced: boolean };
-type MotionPlayer = { element: HTMLElement; notify: (presence: MotionPresence) => void; presence: MotionPresence | null };
+type MotionPlayer = { element: HTMLElement; notify: (presence: MotionPresence) => void; presence: MotionPresence | null; requested: boolean };
 const motions = new Map<HTMLElement, MotionPlayer>();
 let selected: Player | null = null;
 let observer: IntersectionObserver | null = null;
@@ -69,9 +69,12 @@ function update() {
   });
   const motionCandidates = [...motions.values()].filter(player => {
     const rect = player.element.getBoundingClientRect();
+    if (rect.bottom <= 0 || rect.top >= height) player.requested = false;
     const center = rect.top + rect.height / 2;
     const overlap = Math.min(rect.bottom, height * .85) - Math.max(rect.top, height * .15);
-    return rect.width > 0 && center >= height * .2 && center <= height * .8 && overlap >= Math.min(rect.height * .5, 200);
+    const visible = Math.min(rect.bottom, height) - Math.max(rect.top, 0);
+    const requestedVisible = player.requested && visible >= Math.min(rect.height * .2, 100);
+    return rect.width > 0 && (requestedVisible || center >= height * .2 && center <= height * .8 && overlap >= Math.min(rect.height * .5, 200));
   }).sort((a, b) => {
     const distance = (player: MotionPlayer) => Math.abs(player.element.getBoundingClientRect().top + player.element.offsetHeight / 2 - height / 2);
     return distance(a) - distance(b);
@@ -198,7 +201,7 @@ function teardownIfEmpty() {
 /** HTML demonstrations and videos share the same viewport selection. */
 export function registerMotionDemo(element: HTMLElement, notify: MotionPlayer['notify']): () => void {
   if (!players.size && !motions.size) setup();
-  const player: MotionPlayer = { element, notify, presence: null };
+  const player: MotionPlayer = { element, notify, presence: null, requested: false };
   motions.set(element, player);
   observer?.observe(element);
   schedule();
@@ -207,5 +210,10 @@ export function registerMotionDemo(element: HTMLElement, notify: MotionPlayer['n
 
 export function requestMotionPlayback(element: HTMLElement) {
   players.forEach(pause);
-  motions.forEach(player => notifyMotion(player, motionPresence(player, player.element === element)));
+  motions.forEach(player => {
+    player.requested = player.element === element;
+    const presence = motionPresence(player);
+    notifyMotion(player, { ...presence, active: player.requested && presence.inView && !document.hidden && !presence.reduced });
+  });
+  schedule();
 }

@@ -7,7 +7,7 @@ const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chr
 const report={widths:[],errors:[],external:[],failedAssets:[],reduced:[],scrollCalls:0};
 const ids=['bookvoice','aine','babylog','micbridge'];
 try{
- for(const width of [1440,768,390,320]){
+ for(const width of (process.argv.slice(2).length?process.argv.slice(2).map(Number):[1440,768,390,320])){
   const page=await browser.newPage({viewport:{width,height:width>640?1000:844},isMobile:width<640,hasTouch:width<640});
   await page.clock.install();
   await page.route('**/*',r=>{if(r.request().url().startsWith(base))return r.continue();report.external.push(r.request().url());return r.abort();});
@@ -65,15 +65,25 @@ try{
    }
    for(let i=0;i<12;i++)await figure.locator('.feature-transport button').last().evaluate(el=>el.click());
    assert.equal(await figure.locator('.feature-scene').count(),1);
+   await figure.locator('.feature-controls').evaluate(el=>window.__center(el));await advance(80);
+   const controlsY=await page.evaluate(()=>scrollY);
+   await figure.locator('.feature-chapters button').first().evaluate(el=>el.click());await advance(300);
+   assert.equal(await page.evaluate(()=>scrollY),controlsY);
+   const visible=await stage.evaluate(el=>{const r=el.getBoundingClientRect();return Math.min(r.bottom,innerHeight)-Math.max(r.top,0);});
+   if(visible>=100)assert.equal(await stage.getAttribute('data-playing'),'true','manual playback remains visible without moving the page');
+   await stage.evaluate(el=>window.__center(el));await advance(100);
    await advance(700);await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
    assert.equal(await stage.getAttribute('data-playing'),'false');
    await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});await advance(100);
    await page.evaluate(()=>scrollTo(0,0));await advance(100);assert.equal(await page.locator('.feature-stage[data-playing=true]').count(),0);
    await stage.evaluate(el=>window.__center(el));await advance(100);assert(Number(await stage.getAttribute('data-elapsed'))<500);
    // Keep the actual browser's scroll position under the user's control on completion.
-   const completionY=await page.evaluate(()=>scrollY);await advance(Number(await stage.getAttribute('data-duration'))+100);
+   await figure.locator('.feature-chapters button').last().evaluate(el=>el.click());
+   const remaining=Number(await stage.getAttribute('data-duration'))-Number(await stage.getAttribute('data-elapsed'));
+   const completionY=await page.evaluate(()=>scrollY);await advance(remaining+100);
    assert.equal(await stage.getAttribute('data-playing'),'false');assert.equal(await page.evaluate(()=>scrollY),completionY);
    checks.push({id,chapters:count,openingTitle:title,manualPause:true,repeatedReplay:true,visibility:true,reentry:true,noScroll:true});
+   console.log(JSON.stringify({width,id,chapters:count,passed:true}));
   }
   for(let i=0;i<12;i++){await page.locator('#'+ids[i%4]+'-motion-demo .feature-stage').evaluate(el=>window.__center(el));await advance(35);assert((await page.locator('.feature-stage[data-playing=true]').count())<=1);}
   assert.equal(await page.evaluate(()=>window.__scrollCalls),0);
